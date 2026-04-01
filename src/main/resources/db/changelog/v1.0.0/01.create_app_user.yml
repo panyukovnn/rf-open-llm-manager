@@ -1,0 +1,52 @@
+databaseChangeLog:
+  - changeSet:
+      id: "01.create_app_user.yml"
+      author: "Panyukov NN"
+      changes:
+        - createTable:
+            tableName: app_user
+            remarks: "Пользователи приложения"
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: email
+                  type: varchar
+                  remarks: "Электронная почта пользователя"
+              - column:
+                  name: name
+                  type: varchar
+                  remarks: "Имя пользователя"
+              - column:
+                  name: google_id
+                  type: varchar
+                  remarks: "Идентификатор пользователя в Google"
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+                  constraints:
+                    nullable: false
+                  remarks: "Время создания"
+              - column:
+                  name: create_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, создавший запись"
+              - column:
+                  name: last_update_time
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+                  constraints:
+                    nullable: false
+                  remarks: "Время обновления"
+              - column:
+                  name: last_update_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, изменивший запись"

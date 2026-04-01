@@ -3,7 +3,10 @@ plugins {
     id 'jacoco'
     id 'org.springframework.boot' version '3.5.13'
     id 'io.spring.dependency-management' version '1.1.5'
+    id 'com.github.spotbugs' version '6.4.7'
 }
+
+apply from: 'linters.gradle'
 
 group = 'ru.panyukovnn'
 version = '1.0.0-RC1'
@@ -13,21 +16,6 @@ java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()
-    maven { url 'https://repo.spring.io/milestone' }
-    maven {
-        url = uri("https://maven.pkg.github.com/panyukovnn/long-polling-tg-bot-starter")
-        credentials {
-            username = 'panyukovnn'
-            password = System.getenv("GITHUB_PACKAGES_READ_TOKEN")
-        }
-    }
-    maven {
-        url = uri("https://maven.pkg.github.com/panyukovnn/reference-logging-starter")
-        credentials {
-            username = 'panyukovnn'
-            password = System.getenv("GITHUB_PACKAGES_READ_TOKEN")
-        }
-    }
 }
 
 dependencyManagement {
@@ -38,10 +26,20 @@ dependencyManagement {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-validation"
 
-    implementation 'ru.panyukovnn:reference-logging-starter:1.0.0'
+    implementation 'org.postgresql:postgresql'
+    implementation 'org.liquibase:liquibase-core'
+
+    implementation "org.mapstruct:mapstruct:1.5.5.Final"
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+
+    implementation "org.zalando:logbook-spring-boot-starter:3.9.0"
 
     implementation "net.logstash.logback:logstash-logback-encoder:7.3"
     implementation "org.codehaus.janino:janino:3.1.9"
@@ -53,6 +51,7 @@ dependencies {
 
     testImplementation "com.h2database:h2"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.springframework.cloud:spring-cloud-starter-contract-stub-runner"
 }
 
@@ -85,7 +84,7 @@ jacocoTestCoverageVerification {
 }
 
 bootJar {
-    archiveFileName = "video-retelling-bot.jar"
+    archiveFileName = "billing-manager.jar"
 }
 
 tasks.withType(Test) {

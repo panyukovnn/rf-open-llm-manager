@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: billing-manager
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:billing_manager}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    hikari:
+      schema: billing_manager
+      connection-init-sql: CREATE SCHEMA IF NOT EXISTS ${spring.datasource.hikari.schema};
+  liquibase:
+    change-log: ./db/changelog/changelog-master.yml
+    contexts: "postgres"
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid, email, profile
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+
+billing-manager:
+  litellm:
+    base-url: ${LITELLM_BASE_URL:http://localhost:4000}
+    master-key: ${LITELLM_MASTER_KEY}
+  yookassa:
+    shop-id: ${YOOKASSA_SHOP_ID}
+    secret-key: ${YOOKASSA_SECRET_KEY}
+    return-url: ${YOOKASSA_RETURN_URL:http://localhost:3000/payment/return}
+  subscription:
+    grace-period-days: ${SUBSCRIPTION_GRACE_PERIOD_DAYS:3}
+
+logbook:
+  filter:
+    enabled: true
+  format:
+    style: json
+  obfuscate:
+    headers:
+      - Authorization
+      - X-Api-Key
+    parameters:
+      - access_token

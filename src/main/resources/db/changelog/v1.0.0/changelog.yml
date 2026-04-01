@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: release/v1.0.0
+      author: "Panyukov NN"
+      changes:
+        - tagDatabase:
+            tag: release/v1.0.0
+  - include:
+      file: 01.create_app_user.yml
+      relativeToChangelogFile: true
+  - include:
+      file: 02.create_subscription_plan.yml
+      relativeToChangelogFile: true
+  - include:
+      file: 03.create_user_subscription.yml
+      relativeToChangelogFile: true
+  - include:
+      file: 04.create_api_key.yml
+      relativeToChangelogFile: true
+  - include:
+      file: 05.create_usage_event.yml
+      relativeToChangelogFile: true
+  - include:
+      file: 06.create_payment.yml
+      relativeToChangelogFile: true
+  - include:
+      file: 07.insert_default_plans.yml
+      relativeToChangelogFile: true

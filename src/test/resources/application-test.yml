@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: "jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;INIT=create schema if not exists ${spring.datasource.hikari.schema};"
+    username: sa
+    password: sa
+    hikari:
+      schema: billing_manager
+  liquibase:
+    change-log: ./db/changelog/changelog-master.yml
+    contexts: "h2"
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+
+billing-manager:
+  litellm:
+    base-url: http://localhost:4000
+    master-key: test-master-key
+  yookassa:
+    shop-id: test-shop-id
+    secret-key: test-secret-key
+    return-url: http://localhost:3000/payment/return
+  subscription:
+    grace-period-days: 3
+
+logbook:
+  filter:
+    enabled: false

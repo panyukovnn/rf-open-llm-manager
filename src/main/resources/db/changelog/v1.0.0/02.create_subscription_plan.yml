@@ -1,0 +1,60 @@
+databaseChangeLog:
+  - changeSet:
+      id: "02.create_subscription_plan.yml"
+      author: "Panyukov NN"
+      changes:
+        - createTable:
+            tableName: subscription_plan
+            remarks: "Тарифные планы подписок"
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar
+                  remarks: "Наименование тарифного плана"
+              - column:
+                  name: description
+                  type: varchar
+                  remarks: "Описание тарифного плана"
+              - column:
+                  name: monthly_token_limit
+                  type: bigint
+                  remarks: "Месячный лимит токенов"
+              - column:
+                  name: price_kopecks
+                  type: bigint
+                  remarks: "Стоимость в копейках"
+              - column:
+                  name: active
+                  type: boolean
+                  remarks: "Признак активности тарифного плана"
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+                  constraints:
+                    nullable: false
+                  remarks: "Время создания"
+              - column:
+                  name: create_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, создавший запись"
+              - column:
+                  name: last_update_time
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+                  constraints:
+                    nullable: false
+                  remarks: "Время обновления"
+              - column:
+                  name: last_update_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, изменивший запись"
