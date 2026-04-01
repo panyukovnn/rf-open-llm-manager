@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "app.yookassa")
+@ConfigurationProperties(prefix = "billing-manager.yookassa")
 public class YookassaProperty {
 
     private String shopId;

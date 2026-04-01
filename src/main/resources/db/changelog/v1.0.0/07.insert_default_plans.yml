@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: "07.insert_default_plans.yml"
+      author: "Panyukov NN"
+      changes:
+        - sqlFile:
+            path: ./sql/20260401_01_insert_subscription_plan.sql
+            relativeToChangelogFile: true

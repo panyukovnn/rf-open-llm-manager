@@ -1,0 +1,72 @@
+databaseChangeLog:
+  - changeSet:
+      id: "05.create_usage_event.yml"
+      author: "Panyukov NN"
+      changes:
+        - createTable:
+            tableName: usage_event
+            remarks: "События использования API"
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: api_key_id
+                  type: UUID
+                  remarks: "Идентификатор API-ключа"
+              - column:
+                  name: app_user_id
+                  type: UUID
+                  remarks: "Идентификатор пользователя"
+              - column:
+                  name: model
+                  type: varchar
+                  remarks: "Наименование модели"
+              - column:
+                  name: prompt_tokens
+                  type: bigint
+                  remarks: "Количество токенов запроса"
+              - column:
+                  name: completion_tokens
+                  type: bigint
+                  remarks: "Количество токенов ответа"
+              - column:
+                  name: total_tokens
+                  type: bigint
+                  remarks: "Общее количество токенов"
+              - column:
+                  name: cost_usd
+                  type: numeric
+                  remarks: "Стоимость вызова в долларах"
+              - column:
+                  name: litellm_call_id
+                  type: varchar
+                  remarks: "Идентификатор вызова в LiteLLM"
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+                  remarks: "Время создания"
+              - column:
+                  name: create_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, создавший запись"
+              - column:
+                  name: last_update_time
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+                  remarks: "Время обновления"
+              - column:
+                  name: last_update_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, изменивший запись"

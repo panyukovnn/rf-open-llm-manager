@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "app.subscription")
+@ConfigurationProperties(prefix = "billing-manager.subscription")
 public class SubscriptionProperty {
 
     private int gracePeriodDays;

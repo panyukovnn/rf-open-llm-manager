@@ -1,0 +1,64 @@
+databaseChangeLog:
+  - changeSet:
+      id: "04.create_api_key.yml"
+      author: "Panyukov NN"
+      changes:
+        - createTable:
+            tableName: api_key
+            remarks: "API-ключи пользователей"
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: app_user_id
+                  type: UUID
+                  remarks: "Идентификатор пользователя"
+              - column:
+                  name: key_hash
+                  type: varchar
+                  remarks: "Хеш API-ключа"
+              - column:
+                  name: litellm_key_id
+                  type: varchar
+                  remarks: "Идентификатор ключа в LiteLLM"
+              - column:
+                  name: name
+                  type: varchar
+                  remarks: "Наименование ключа"
+              - column:
+                  name: active
+                  type: boolean
+                  remarks: "Признак активности ключа"
+              - column:
+                  name: revoked_at
+                  type: timestamp
+                  remarks: "Время отзыва ключа"
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+                  remarks: "Время создания"
+              - column:
+                  name: create_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, создавший запись"
+              - column:
+                  name: last_update_time
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+                  remarks: "Время обновления"
+              - column:
+                  name: last_update_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, изменивший запись"

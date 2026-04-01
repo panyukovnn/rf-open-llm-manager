@@ -2,22 +2,22 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: billing-manager
   datasource:
-    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/billing_manager}
-    username: ${DATASOURCE_USERNAME:postgres}
-    password: ${DATASOURCE_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:billing_manager}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    hikari:
+      schema: billing_manager
+      connection-init-sql: CREATE SCHEMA IF NOT EXISTS ${spring.datasource.hikari.schema};
+  liquibase:
+    change-log: ./db/changelog/changelog-master.yml
+    contexts: "postgres"
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
-    properties:
-      hibernate:
-        default_schema: public
-
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
 
   security:
     oauth2:
@@ -34,7 +34,7 @@ spring:
         jwt:
           issuer-uri: https://accounts.google.com
 
-app:
+billing-manager:
   litellm:
     base-url: ${LITELLM_BASE_URL:http://localhost:4000}
     master-key: ${LITELLM_MASTER_KEY}

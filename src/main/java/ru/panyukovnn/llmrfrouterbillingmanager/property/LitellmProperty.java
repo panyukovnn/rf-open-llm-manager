@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "app.litellm")
+@ConfigurationProperties(prefix = "billing-manager.litellm")
 public class LitellmProperty {
 
     private String baseUrl;
