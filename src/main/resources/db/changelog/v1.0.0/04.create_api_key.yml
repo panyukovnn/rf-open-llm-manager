@@ -39,7 +39,7 @@ databaseChangeLog:
               - column:
                   name: create_time
                   type: timestamp
-                  defaultValueComputed: CURRENT_TIMESTAMP
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
                   constraints:
                     nullable: false
                   remarks: "Время создания"
@@ -52,7 +52,7 @@ databaseChangeLog:
               - column:
                   name: last_update_time
                   type: timestamp
-                  defaultValueComputed: CURRENT_TIMESTAMP
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
                   constraints:
                     nullable: false
                   remarks: "Время обновления"
