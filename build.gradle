@@ -1,0 +1,97 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'org.springframework.boot' version '3.5.13'
+    id 'io.spring.dependency-management' version '1.1.5'
+}
+
+group = 'ru.panyukovnn'
+version = '1.0.0-RC1'
+
+java.targetCompatibility = JavaVersion.VERSION_21
+java.sourceCompatibility = JavaVersion.VERSION_21
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven {
+        url = uri("https://maven.pkg.github.com/panyukovnn/long-polling-tg-bot-starter")
+        credentials {
+            username = 'panyukovnn'
+            password = System.getenv("GITHUB_PACKAGES_READ_TOKEN")
+        }
+    }
+    maven {
+        url = uri("https://maven.pkg.github.com/panyukovnn/reference-logging-starter")
+        credentials {
+            username = 'panyukovnn'
+            password = System.getenv("GITHUB_PACKAGES_READ_TOKEN")
+        }
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.2"
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    implementation 'ru.panyukovnn:reference-logging-starter:1.0.0'
+
+    implementation "net.logstash.logback:logstash-logback-encoder:7.3"
+    implementation "org.codehaus.janino:janino:3.1.9"
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation "com.h2database:h2"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.cloud:spring-cloud-starter-contract-stub-runner"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/config/*",
+                    "**/dto/*",
+                    "**/model/*",
+                    "**/property/*",
+                    "**/exception/*"
+            ])
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.40
+            }
+        }
+    }
+}
+
+bootJar {
+    archiveFileName = "video-retelling-bot.jar"
+}
+
+tasks.withType(Test) {
+    systemProperty "file.encoding", "UTF-8"
+}
+
+jar {
+    enabled = false
+}
