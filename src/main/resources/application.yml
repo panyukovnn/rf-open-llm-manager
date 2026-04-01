@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/billing_manager}
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: public
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid, email, profile
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+
+app:
+  litellm:
+    base-url: ${LITELLM_BASE_URL:http://localhost:4000}
+    master-key: ${LITELLM_MASTER_KEY}
+  yookassa:
+    shop-id: ${YOOKASSA_SHOP_ID}
+    secret-key: ${YOOKASSA_SECRET_KEY}
+    return-url: ${YOOKASSA_RETURN_URL:http://localhost:3000/payment/return}
+  subscription:
+    grace-period-days: ${SUBSCRIPTION_GRACE_PERIOD_DAYS:3}
+
+logbook:
+  filter:
+    enabled: true
+  format:
+    style: json
+  obfuscate:
+    headers:
+      - Authorization
+      - X-Api-Key
+    parameters:
+      - access_token
