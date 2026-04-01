@@ -39,8 +39,13 @@ public class AppUser extends AuditableEntity {
 
     @Override
     public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null || getClass() != object.getClass()) return false;
+        if (this == object) {
+            return true;
+        }
+
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
         AppUser appUser = (AppUser) object;
 
         return Objects.equals(id, appUser.id);

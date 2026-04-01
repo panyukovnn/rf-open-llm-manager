@@ -47,8 +47,13 @@ public class SubscriptionPlan extends AuditableEntity {
 
     @Override
     public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null || getClass() != object.getClass()) return false;
+        if (this == object) {
+            return true;
+        }
+
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
         SubscriptionPlan that = (SubscriptionPlan) object;
 
         return Objects.equals(id, that.id);
