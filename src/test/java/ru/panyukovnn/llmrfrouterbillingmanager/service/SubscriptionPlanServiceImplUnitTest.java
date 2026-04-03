@@ -6,9 +6,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.panyukovnn.llmrfrouterbillingmanager.dto.SubscriptionPlanResponse;
+import ru.panyukovnn.llmrfrouterbillingmanager.mapper.SubscriptionMapper;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.SubscriptionPlan;
 import ru.panyukovnn.llmrfrouterbillingmanager.repository.SubscriptionPlanRepository;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.impl.SubscriptionPlanServiceImpl;
+import ru.panyukovnn.referencemodelstarter.dto.response.CommonItemsResponse;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -17,6 +20,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,6 +28,8 @@ class SubscriptionPlanServiceImplUnitTest {
 
     @Mock
     private SubscriptionPlanRepository subscriptionPlanRepository;
+    @Mock
+    private SubscriptionMapper subscriptionMapper;
 
     @InjectMocks
     private SubscriptionPlanServiceImpl subscriptionPlanService;
@@ -46,6 +52,36 @@ class SubscriptionPlanServiceImplUnitTest {
 
             assertEquals(1, result.size());
             assertEquals("Free", result.get(0).getName());
+        }
+    }
+
+    @Nested
+    class FindAllActivePlanItems {
+
+        @Test
+        void when_findAllActivePlanItems_then_success() {
+            UUID planId = UUID.randomUUID();
+            SubscriptionPlan plan = SubscriptionPlan.builder()
+                    .id(planId)
+                    .name("Free")
+                    .active(true)
+                    .build();
+            SubscriptionPlanResponse planResponse = SubscriptionPlanResponse.builder()
+                    .id(planId)
+                    .name("Free")
+                    .build();
+
+            when(subscriptionPlanRepository.findAllByActiveTrue())
+                    .thenReturn(List.of(plan));
+            when(subscriptionMapper.toSubscriptionPlanResponses(List.of(plan)))
+                    .thenReturn(List.of(planResponse));
+
+            CommonItemsResponse<SubscriptionPlanResponse> result = subscriptionPlanService.findAllActivePlanItems();
+
+            assertEquals(1, result.getItemsCount());
+            assertEquals(1, result.getTotalCount());
+            assertEquals("Free", result.getItems().get(0).getName());
+            verify(subscriptionMapper).toSubscriptionPlanResponses(List.of(plan));
         }
     }
 

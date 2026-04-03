@@ -6,7 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.panyukovnn.llmrfrouterbillingmanager.dto.UserSubscriptionResponse;
 import ru.panyukovnn.llmrfrouterbillingmanager.exception.TokenLimitExceededException;
+import ru.panyukovnn.llmrfrouterbillingmanager.mapper.SubscriptionMapper;
+import ru.panyukovnn.llmrfrouterbillingmanager.model.AppUser;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.SubscriptionPlan;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.SubscriptionStatus;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.UserSubscription;
@@ -21,6 +24,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +40,10 @@ class UserSubscriptionServiceImplUnitTest {
     private SubscriptionPlanService subscriptionPlanService;
     @Mock
     private SubscriptionProperty subscriptionProperty;
+    @Mock
+    private AppUserService appUserService;
+    @Mock
+    private SubscriptionMapper subscriptionMapper;
 
     @InjectMocks
     private UserSubscriptionServiceImpl userSubscriptionService;
@@ -71,6 +79,86 @@ class UserSubscriptionServiceImplUnitTest {
             Optional<UserSubscription> result = userSubscriptionService.findActiveSubscription(userId);
 
             assertTrue(result.isEmpty());
+        }
+    }
+
+    @Nested
+    class FindCurrentSubscriptionResponse {
+
+        @Test
+        void when_findCurrentSubscriptionResponse_then_success() {
+            UUID userId = UUID.randomUUID();
+            AppUser user = AppUser.builder().id(userId).build();
+            UserSubscription subscription = UserSubscription.builder()
+                    .id(UUID.randomUUID())
+                    .appUserId(userId)
+                    .status(SubscriptionStatus.ACTIVE)
+                    .build();
+            UserSubscriptionResponse expectedResponse = UserSubscriptionResponse.builder()
+                    .id(subscription.getId())
+                    .status(SubscriptionStatus.ACTIVE)
+                    .build();
+
+            when(appUserService.findCurrentUser()).thenReturn(user);
+            when(userSubscriptionRepository.findByAppUserIdAndStatus(userId, SubscriptionStatus.ACTIVE))
+                    .thenReturn(Optional.of(subscription));
+            when(subscriptionMapper.toUserSubscriptionResponse(subscription))
+                    .thenReturn(expectedResponse);
+
+            UserSubscriptionResponse result = userSubscriptionService.findCurrentSubscriptionResponse();
+
+            assertNotNull(result);
+            assertEquals(SubscriptionStatus.ACTIVE, result.getStatus());
+            verify(subscriptionMapper).toUserSubscriptionResponse(subscription);
+        }
+
+        @Test
+        void when_findCurrentSubscriptionResponse_withNoSubscription_then_returnsNull() {
+            UUID userId = UUID.randomUUID();
+            AppUser user = AppUser.builder().id(userId).build();
+
+            when(appUserService.findCurrentUser()).thenReturn(user);
+            when(userSubscriptionRepository.findByAppUserIdAndStatus(userId, SubscriptionStatus.ACTIVE))
+                    .thenReturn(Optional.empty());
+
+            UserSubscriptionResponse result = userSubscriptionService.findCurrentSubscriptionResponse();
+
+            assertNull(result);
+        }
+    }
+
+    @Nested
+    class ActivateCurrentSubscription {
+
+        @Test
+        void when_activateCurrentSubscription_then_success() {
+            UUID userId = UUID.randomUUID();
+            UUID planId = UUID.randomUUID();
+            AppUser user = AppUser.builder().id(userId).build();
+            SubscriptionPlan plan = SubscriptionPlan.builder()
+                    .id(planId)
+                    .name("Standard")
+                    .monthlyTokenLimit(5000000L)
+                    .build();
+            UserSubscriptionResponse expectedResponse = UserSubscriptionResponse.builder()
+                    .subscriptionPlanId(planId)
+                    .status(SubscriptionStatus.ACTIVE)
+                    .build();
+
+            when(appUserService.findCurrentUser()).thenReturn(user);
+            when(subscriptionPlanService.findById(planId)).thenReturn(plan);
+            when(subscriptionProperty.getPeriodDays()).thenReturn(30);
+            when(userSubscriptionRepository.save(any(UserSubscription.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            when(subscriptionMapper.toUserSubscriptionResponse(any(UserSubscription.class)))
+                    .thenReturn(expectedResponse);
+
+            UserSubscriptionResponse result = userSubscriptionService.activateCurrentSubscription(planId);
+
+            assertNotNull(result);
+            assertEquals(SubscriptionStatus.ACTIVE, result.getStatus());
+            assertEquals(planId, result.getSubscriptionPlanId());
+            verify(subscriptionMapper).toUserSubscriptionResponse(any(UserSubscription.class));
         }
     }
 
