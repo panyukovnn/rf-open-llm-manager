@@ -8,9 +8,10 @@ import ru.panyukovnn.llmrfrouterbillingmanager.dto.UserProfileResponse;
 import ru.panyukovnn.llmrfrouterbillingmanager.mapper.AppUserMapper;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.AppUser;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.AppUserService;
+import ru.panyukovnn.referencemodelstarter.dto.response.CommonResponse;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/billing-manager/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -18,9 +19,12 @@ public class UserController {
     private final AppUserMapper appUserMapper;
 
     @GetMapping("/me")
-    public UserProfileResponse findCurrentUserProfile() {
+    public CommonResponse<UserProfileResponse> findCurrentUserProfile() {
         AppUser currentUser = appUserService.findCurrentUser();
+        UserProfileResponse profile = appUserMapper.toUserProfileResponse(currentUser);
 
-        return appUserMapper.toUserProfileResponse(currentUser);
+        return CommonResponse.<UserProfileResponse>builder()
+                .data(profile)
+                .build();
     }
 }

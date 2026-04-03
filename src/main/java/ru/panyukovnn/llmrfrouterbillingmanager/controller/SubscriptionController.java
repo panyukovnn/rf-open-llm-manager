@@ -2,7 +2,6 @@ package ru.panyukovnn.llmrfrouterbillingmanager.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,11 +14,11 @@ import ru.panyukovnn.llmrfrouterbillingmanager.model.AppUser;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.UserSubscription;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.AppUserService;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.UserSubscriptionService;
-
-import java.util.Optional;
+import ru.panyukovnn.referencemodelstarter.dto.request.CommonRequest;
+import ru.panyukovnn.referencemodelstarter.dto.response.CommonResponse;
 
 @RestController
-@RequestMapping("/api/v1/subscriptions")
+@RequestMapping("/billing-manager/api/v1/subscriptions")
 @RequiredArgsConstructor
 public class SubscriptionController {
 
@@ -28,24 +27,28 @@ public class SubscriptionController {
     private final SubscriptionMapper subscriptionMapper;
 
     @GetMapping("/current")
-    public ResponseEntity<UserSubscriptionResponse> findCurrentSubscription() {
+    public CommonResponse<UserSubscriptionResponse> findCurrentSubscription() {
         AppUser currentUser = appUserService.findCurrentUser();
-        Optional<UserSubscription> subscription = userSubscriptionService
-                .findActiveSubscription(currentUser.getId());
-
-        return subscription
+        UserSubscriptionResponse subscriptionResponse = userSubscriptionService
+                .findActiveSubscription(currentUser.getId())
                 .map(subscriptionMapper::toUserSubscriptionResponse)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.noContent().build());
+                .orElse(null);
+
+        return CommonResponse.<UserSubscriptionResponse>builder()
+                .data(subscriptionResponse)
+                .build();
     }
 
     @PostMapping
-    public UserSubscriptionResponse createSubscription(
-            @Valid @RequestBody CreateSubscriptionRequest request) {
+    public CommonResponse<UserSubscriptionResponse> createSubscription(
+            @Valid @RequestBody CommonRequest<CreateSubscriptionRequest> request) {
         AppUser currentUser = appUserService.findCurrentUser();
         UserSubscription subscription = userSubscriptionService
-                .activateSubscription(currentUser.getId(), request.getPlanId());
+                .activateSubscription(currentUser.getId(), request.getData().getPlanId());
+        UserSubscriptionResponse subscriptionResponse = subscriptionMapper.toUserSubscriptionResponse(subscription);
 
-        return subscriptionMapper.toUserSubscriptionResponse(subscription);
+        return CommonResponse.<UserSubscriptionResponse>builder()
+                .data(subscriptionResponse)
+                .build();
     }
 }

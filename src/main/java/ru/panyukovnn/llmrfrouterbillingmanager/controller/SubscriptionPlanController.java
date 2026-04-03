@@ -8,11 +8,13 @@ import ru.panyukovnn.llmrfrouterbillingmanager.dto.SubscriptionPlanResponse;
 import ru.panyukovnn.llmrfrouterbillingmanager.mapper.SubscriptionMapper;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.SubscriptionPlan;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.SubscriptionPlanService;
+import ru.panyukovnn.referencemodelstarter.dto.response.CommonItemsResponse;
+import ru.panyukovnn.referencemodelstarter.dto.response.CommonResponse;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/subscription-plans")
+@RequestMapping("/billing-manager/api/v1/subscription-plans")
 @RequiredArgsConstructor
 public class SubscriptionPlanController {
 
@@ -20,9 +22,18 @@ public class SubscriptionPlanController {
     private final SubscriptionMapper subscriptionMapper;
 
     @GetMapping
-    public List<SubscriptionPlanResponse> findAllActivePlans() {
+    public CommonResponse<CommonItemsResponse<SubscriptionPlanResponse>> findAllActivePlans() {
         List<SubscriptionPlan> plans = subscriptionPlanService.findAllActivePlans();
+        List<SubscriptionPlanResponse> planResponses = subscriptionMapper.toSubscriptionPlanResponses(plans);
 
-        return subscriptionMapper.toSubscriptionPlanResponses(plans);
+        CommonItemsResponse<SubscriptionPlanResponse> itemsResponse = CommonItemsResponse.<SubscriptionPlanResponse>builder()
+                .items(planResponses)
+                .itemsCount(planResponses.size())
+                .totalCount(planResponses.size())
+                .build();
+
+        return CommonResponse.<CommonItemsResponse<SubscriptionPlanResponse>>builder()
+                .data(itemsResponse)
+                .build();
     }
 }

@@ -24,24 +24,26 @@ class UserControllerTest extends AbstractTest {
             UUID userId = UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
             String token = jwtTokenProvider.generateToken(userId, "test@example.com");
 
-            mockMvc.perform(get("/api/v1/users/me")
+            mockMvc.perform(get("/billing-manager/api/v1/users/me")
                             .header("Authorization", "Bearer " + token))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value("a1b2c3d4-e5f6-7890-abcd-ef1234567890"))
-                    .andExpect(jsonPath("$.email").value("test@example.com"))
-                    .andExpect(jsonPath("$.name").value("Test User"));
+                    .andExpect(jsonPath("$.id").exists())
+                    .andExpect(jsonPath("$.timestamp").exists())
+                    .andExpect(jsonPath("$.data.id").value("a1b2c3d4-e5f6-7890-abcd-ef1234567890"))
+                    .andExpect(jsonPath("$.data.email").value("test@example.com"))
+                    .andExpect(jsonPath("$.data.name").value("Test User"));
         }
 
         @Test
         void when_findCurrentUserProfile_withInvalidToken_then_unauthorized() throws Exception {
-            mockMvc.perform(get("/api/v1/users/me")
+            mockMvc.perform(get("/billing-manager/api/v1/users/me")
                             .header("Authorization", "Bearer invalid-token"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         void when_findCurrentUserProfile_withoutToken_then_unauthorized() throws Exception {
-            mockMvc.perform(get("/api/v1/users/me"))
+            mockMvc.perform(get("/billing-manager/api/v1/users/me"))
                     .andExpect(status().isUnauthorized());
         }
     }
