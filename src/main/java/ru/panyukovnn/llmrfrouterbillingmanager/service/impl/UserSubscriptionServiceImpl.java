@@ -17,12 +17,17 @@ import ru.panyukovnn.llmrfrouterbillingmanager.service.AppUserService;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.SubscriptionPlanService;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.UserSubscriptionService;
 
+import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.NoSuchElementException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserSubscriptionServiceImpl implements UserSubscriptionService {
@@ -82,21 +87,38 @@ public class UserSubscriptionServiceImpl implements UserSubscriptionService {
     public void deductTokens(UUID userId, long tokens) {
         UserSubscription subscription = userSubscriptionRepository
                 .findByAppUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Активная подписка не найдена для пользователя: " + userId));
+                .orElseThrow(() -> new BusinessException(
+                        "c9d1",
+                        "Активная подписка не найдена"));
 
         SubscriptionPlan plan = subscriptionPlanService.findById(subscription.getSubscriptionPlanId());
         long newTokensUsed = subscription.getTokensUsed() + tokens;
 
         if (newTokensUsed > plan.getMonthlyTokenLimit()) {
             throw new TokenLimitExceededException(
-                    "Превышен лимит токенов для пользователя: " + userId
-                            + ", использовано: " + newTokensUsed
-                            + ", лимит: " + plan.getMonthlyTokenLimit());
+                    "a3f7",
+                    "Превышен лимит токенов");
         }
 
         subscription.setTokensUsed(newTokensUsed);
         userSubscriptionRepository.save(subscription);
+    }
+
+    @Override
+    @Transactional
+    public int expireSubscriptions() {
+        List<UserSubscription> expiredSubscriptions = userSubscriptionRepository
+                .findAllByStatusAndPeriodEndBefore(SubscriptionStatus.ACTIVE, Instant.now());
+
+        for (UserSubscription subscription : expiredSubscriptions) {
+            subscription.setStatus(SubscriptionStatus.EXPIRED);
+            userSubscriptionRepository.save(subscription);
+
+            log.info("Подписка {} пользователя {} переведена в статус EXPIRED",
+                    subscription.getId(), subscription.getAppUserId());
+        }
+
+        return expiredSubscriptions.size();
     }
 
     @Override

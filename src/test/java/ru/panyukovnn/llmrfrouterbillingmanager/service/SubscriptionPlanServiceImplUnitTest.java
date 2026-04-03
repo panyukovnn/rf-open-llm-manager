@@ -12,9 +12,9 @@ import ru.panyukovnn.llmrfrouterbillingmanager.model.SubscriptionPlan;
 import ru.panyukovnn.llmrfrouterbillingmanager.repository.SubscriptionPlanRepository;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.impl.SubscriptionPlanServiceImpl;
 import ru.panyukovnn.referencemodelstarter.dto.response.CommonItemsResponse;
+import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -111,7 +111,7 @@ class SubscriptionPlanServiceImplUnitTest {
             when(subscriptionPlanRepository.findById(planId))
                     .thenReturn(Optional.empty());
 
-            assertThrows(NoSuchElementException.class,
+            assertThrows(BusinessException.class,
                     () -> subscriptionPlanService.findById(planId));
         }
     }

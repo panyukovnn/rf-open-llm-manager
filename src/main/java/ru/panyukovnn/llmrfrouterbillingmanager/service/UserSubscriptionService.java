@@ -18,5 +18,7 @@ public interface UserSubscriptionService {
 
     void deductTokens(UUID userId, long tokens);
 
+    int expireSubscriptions();
+
     boolean hasAvailableTokens(UUID userId);
 }

@@ -9,8 +9,9 @@ import ru.panyukovnn.llmrfrouterbillingmanager.repository.SubscriptionPlanReposi
 import ru.panyukovnn.llmrfrouterbillingmanager.service.SubscriptionPlanService;
 import ru.panyukovnn.referencemodelstarter.dto.response.CommonItemsResponse;
 
+import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
+
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -40,7 +41,8 @@ public class SubscriptionPlanServiceImpl implements SubscriptionPlanService {
     @Override
     public SubscriptionPlan findById(UUID planId) {
         return subscriptionPlanRepository.findById(planId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Тарифный план не найден по идентификатору: " + planId));
+                .orElseThrow(() -> new BusinessException(
+                        "e7a3",
+                        "Тарифный план не найден"));
     }
 }

@@ -1,8 +1,10 @@
 package ru.panyukovnn.llmrfrouterbillingmanager.exception;
 
-public class TokenLimitExceededException extends RuntimeException {
+import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
 
-    public TokenLimitExceededException(String message) {
-        super(message);
+public class TokenLimitExceededException extends BusinessException {
+
+    public TokenLimitExceededException(String location, String displayMessage) {
+        super(location, "tokenLimitExceeded", displayMessage);
     }
 }

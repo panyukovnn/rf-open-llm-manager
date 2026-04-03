@@ -8,8 +8,8 @@ import ru.panyukovnn.llmrfrouterbillingmanager.mapper.AppUserMapper;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.AppUser;
 import ru.panyukovnn.llmrfrouterbillingmanager.repository.AppUserRepository;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.AppUserService;
+import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,8 +27,9 @@ public class AppUserServiceImpl implements AppUserService {
                 .getName();
 
         return appUserRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Пользователь не найден по идентификатору: " + userId));
+                .orElseThrow(() -> new BusinessException(
+                        "b4e2",
+                        "Пользователь не найден"));
     }
 
     @Override
