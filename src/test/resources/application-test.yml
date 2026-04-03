@@ -39,6 +39,8 @@ billing-manager:
     return-url: http://localhost:3000/payment/return
   subscription:
     grace-period-days: 3
+    period-days: 30
+    expiration-cron: "-"
 
 logbook:
   filter:

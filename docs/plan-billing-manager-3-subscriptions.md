@@ -2,43 +2,43 @@
 
 ## Модели
 
-- [ ] Сущность `SubscriptionPlan` (id, name, description, monthlyTokenLimit, priceKopecks, active, createdAt)
-- [ ] Сущность `UserSubscription` (id, appUser, subscriptionPlan, status, tokensUsed, periodStart, periodEnd, createdAt)
-- [ ] Enum `SubscriptionStatus` — ACTIVE, EXPIRED, CANCELLED
+- [x] Сущность `SubscriptionPlan` (id, name, description, monthlyTokenLimit, priceKopecks, active, createdAt)
+- [x] Сущность `UserSubscription` (id, appUser, subscriptionPlan, status, tokensUsed, periodStart, periodEnd, createdAt)
+- [x] Enum `SubscriptionStatus` — ACTIVE, EXPIRED, CANCELLED
 
 ## Репозитории
 
-- [ ] `SubscriptionPlanRepository` — `findAllByActiveTrue()`
-- [ ] `UserSubscriptionRepository` — `findByAppUserIdAndStatus(UUID, SubscriptionStatus)`, `findAllByStatusAndPeriodEndBefore(SubscriptionStatus, LocalDateTime)`
+- [x] `SubscriptionPlanRepository` — `findAllByActiveTrue()`
+- [x] `UserSubscriptionRepository` — `findByAppUserIdAndStatus(UUID, SubscriptionStatus)`, `findAllByStatusAndPeriodEndBefore(SubscriptionStatus, LocalDateTime)`
 
 ## Сервисы
 
-- [ ] `SubscriptionPlanService` (интерфейс) — `findAllActivePlans()`, `findById(UUID)`
-- [ ] `SubscriptionPlanServiceImpl`
-- [ ] `UserSubscriptionService` (интерфейс) — `findActiveSubscription(UUID userId)`, `activateSubscription(UUID userId, UUID planId)`, `deductTokens(UUID userId, long tokens)`, `hasAvailableTokens(UUID userId)`
-- [ ] `UserSubscriptionServiceImpl`
+- [x] `SubscriptionPlanService` (интерфейс) — `findAllActivePlans()`, `findById(UUID)`
+- [x] `SubscriptionPlanServiceImpl`
+- [x] `UserSubscriptionService` (интерфейс) — `findActiveSubscription(UUID userId)`, `activateSubscription(UUID userId, UUID planId)`, `deductTokens(UUID userId, long tokens)`, `hasAvailableTokens(UUID userId)`
+- [x] `UserSubscriptionServiceImpl`
 
 ## REST API
 
-- [ ] `GET /api/v1/subscription-plans` — список доступных тарифов
-- [ ] `GET /api/v1/subscriptions/current` — текущая подписка пользователя
-- [ ] `POST /api/v1/subscriptions` — оформить подписку (инициирует оплату через ЮKassa)
-- [ ] DTO: `SubscriptionPlanResponse`, `UserSubscriptionResponse`, `CreateSubscriptionRequest`
+- [x] `GET /api/v1/subscription-plans` — список доступных тарифов
+- [x] `GET /api/v1/subscriptions/current` — текущая подписка пользователя
+- [x] `POST /api/v1/subscriptions` — оформить подписку (инициирует оплату через ЮKassa)
+- [x] DTO: `SubscriptionPlanResponse`, `UserSubscriptionResponse`, `CreateSubscriptionRequest`
 
 ## Планировщик
 
-- [ ] `SubscriptionExpirationScheduler` — ежедневно проверяет истёкшие подписки, меняет статус на EXPIRED, деактивирует API-ключи в LiteLLM
+- [x] `SubscriptionExpirationScheduler` — ежедневно проверяет истёкшие подписки, меняет статус на EXPIRED, деактивирует API-ключи в LiteLLM
 
 ## Маппер
 
-- [ ] `SubscriptionMapper` — entity <-> DTO
+- [x] `SubscriptionMapper` — entity <-> DTO
 
 ## Тесты
 
-- [ ] `when_findAllActivePlans_then_success`
-- [ ] `when_findActiveSubscription_then_success`
-- [ ] `when_findActiveSubscription_withNoSubscription_then_emptyResult`
-- [ ] `when_activateSubscription_then_subscriptionCreated`
-- [ ] `when_deductTokens_then_tokensUsedIncremented`
-- [ ] `when_deductTokens_withExceededLimit_then_tokenLimitExceededException`
-- [ ] `when_expirationScheduler_withExpiredSubscription_then_statusChangedToExpired`
+- [x] `when_findAllActivePlans_then_success`
+- [x] `when_findActiveSubscription_then_success`
+- [x] `when_findActiveSubscription_withNoSubscription_then_emptyResult`
+- [x] `when_activateSubscription_then_subscriptionCreated`
+- [x] `when_deductTokens_then_tokensUsedIncremented`
+- [x] `when_deductTokens_withExceededLimit_then_tokenLimitExceededException`
+- [x] `when_expirationScheduler_withExpiredSubscription_then_statusChangedToExpired`

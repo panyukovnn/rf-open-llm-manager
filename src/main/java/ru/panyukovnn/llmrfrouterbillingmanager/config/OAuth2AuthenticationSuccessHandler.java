@@ -11,9 +11,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.AppUser;
 import ru.panyukovnn.llmrfrouterbillingmanager.property.BillingManagerProperty;
 import ru.panyukovnn.llmrfrouterbillingmanager.repository.AppUserRepository;
+import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
 
 import java.io.IOException;
-import java.util.NoSuchElementException;
 
 @Component
 @RequiredArgsConstructor
@@ -31,8 +31,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String googleId = oAuth2User.getAttribute("sub");
 
         AppUser appUser = appUserRepository.findByGoogleId(googleId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Пользователь не найден по Google ID: " + googleId));
+                .orElseThrow(() -> new BusinessException(
+                        "f1b8",
+                        "Пользователь не найден"));
 
         String token = jwtTokenProvider.generateToken(appUser.getId(), appUser.getEmail());
 

@@ -27,9 +27,11 @@ class UserControllerTest extends AbstractTest {
             mockMvc.perform(get("/api/v1/users/me")
                             .header("Authorization", "Bearer " + token))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value("a1b2c3d4-e5f6-7890-abcd-ef1234567890"))
-                    .andExpect(jsonPath("$.email").value("test@example.com"))
-                    .andExpect(jsonPath("$.name").value("Test User"));
+                    .andExpect(jsonPath("$.id").exists())
+                    .andExpect(jsonPath("$.timestamp").exists())
+                    .andExpect(jsonPath("$.data.id").value("a1b2c3d4-e5f6-7890-abcd-ef1234567890"))
+                    .andExpect(jsonPath("$.data.email").value("test@example.com"))
+                    .andExpect(jsonPath("$.data.name").value("Test User"));
         }
 
         @Test
