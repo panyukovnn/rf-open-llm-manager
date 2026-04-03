@@ -39,6 +39,10 @@ dependencies {
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
     annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
 
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
     implementation "org.zalando:logbook-spring-boot-starter:3.9.0"
 
     implementation "net.logstash.logback:logstash-logback-encoder:7.3"

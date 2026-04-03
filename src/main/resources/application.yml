@@ -35,6 +35,10 @@ spring:
           issuer-uri: https://accounts.google.com
 
 billing-manager:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:1440}
+  frontend-redirect-url: ${FRONTEND_REDIRECT_URL:http://localhost:3000/auth/callback}
   litellm:
     base-url: ${LITELLM_BASE_URL:http://localhost:4000}
     master-key: ${LITELLM_MASTER_KEY}
