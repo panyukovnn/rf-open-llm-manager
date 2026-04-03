@@ -1,6 +1,8 @@
 package ru.panyukovnn.llmrfrouterbillingmanager.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,7 +38,8 @@ public class UserSubscription extends AuditableEntity {
     /**
      * Статус подписки
      */
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private SubscriptionStatus status;
     /**
      * Количество использованных токенов
      */

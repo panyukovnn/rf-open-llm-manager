@@ -1,0 +1,82 @@
+package ru.panyukovnn.llmrfrouterbillingmanager.service;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.panyukovnn.llmrfrouterbillingmanager.model.SubscriptionPlan;
+import ru.panyukovnn.llmrfrouterbillingmanager.repository.SubscriptionPlanRepository;
+import ru.panyukovnn.llmrfrouterbillingmanager.service.impl.SubscriptionPlanServiceImpl;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class SubscriptionPlanServiceImplUnitTest {
+
+    @Mock
+    private SubscriptionPlanRepository subscriptionPlanRepository;
+
+    @InjectMocks
+    private SubscriptionPlanServiceImpl subscriptionPlanService;
+
+    @Nested
+    class FindAllActivePlans {
+
+        @Test
+        void when_findAllActivePlans_then_success() {
+            SubscriptionPlan plan = SubscriptionPlan.builder()
+                    .id(UUID.randomUUID())
+                    .name("Free")
+                    .active(true)
+                    .build();
+
+            when(subscriptionPlanRepository.findAllByActiveTrue())
+                    .thenReturn(List.of(plan));
+
+            List<SubscriptionPlan> result = subscriptionPlanService.findAllActivePlans();
+
+            assertEquals(1, result.size());
+            assertEquals("Free", result.get(0).getName());
+        }
+    }
+
+    @Nested
+    class FindById {
+
+        @Test
+        void when_findById_then_success() {
+            UUID planId = UUID.randomUUID();
+            SubscriptionPlan plan = SubscriptionPlan.builder()
+                    .id(planId)
+                    .name("Standard")
+                    .build();
+
+            when(subscriptionPlanRepository.findById(planId))
+                    .thenReturn(Optional.of(plan));
+
+            SubscriptionPlan result = subscriptionPlanService.findById(planId);
+
+            assertEquals("Standard", result.getName());
+        }
+
+        @Test
+        void when_findById_withNonExistentPlan_then_throwsException() {
+            UUID planId = UUID.randomUUID();
+
+            when(subscriptionPlanRepository.findById(planId))
+                    .thenReturn(Optional.empty());
+
+            assertThrows(NoSuchElementException.class,
+                    () -> subscriptionPlanService.findById(planId));
+        }
+    }
+}

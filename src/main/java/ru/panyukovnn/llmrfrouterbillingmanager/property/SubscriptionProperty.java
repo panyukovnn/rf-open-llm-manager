@@ -12,4 +12,5 @@ import org.springframework.stereotype.Component;
 public class SubscriptionProperty {
 
     private int gracePeriodDays;
+    private int periodDays;
 }
