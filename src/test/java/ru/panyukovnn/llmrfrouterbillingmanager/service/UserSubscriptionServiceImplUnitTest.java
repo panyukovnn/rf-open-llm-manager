@@ -18,6 +18,9 @@ import ru.panyukovnn.llmrfrouterbillingmanager.repository.UserSubscriptionReposi
 import ru.panyukovnn.llmrfrouterbillingmanager.service.impl.UserSubscriptionServiceImpl;
 import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
 
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -257,6 +262,41 @@ class UserSubscriptionServiceImplUnitTest {
 
             assertThrows(BusinessException.class,
                     () -> userSubscriptionService.deductTokens(userId, 100L));
+        }
+    }
+
+    @Nested
+    class ExpireSubscriptions {
+
+        @Test
+        void when_expireSubscriptions_withExpiredSubscription_then_statusChangedToExpired() {
+            UserSubscription subscription = UserSubscription.builder()
+                    .id(UUID.randomUUID())
+                    .appUserId(UUID.randomUUID())
+                    .status(SubscriptionStatus.ACTIVE)
+                    .build();
+
+            when(userSubscriptionRepository.findAllByStatusAndPeriodEndBefore(
+                    eq(SubscriptionStatus.ACTIVE), any(Instant.class)))
+                    .thenReturn(List.of(subscription));
+            when(userSubscriptionRepository.save(any(UserSubscription.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            userSubscriptionService.expireSubscriptions();
+
+            assertEquals(SubscriptionStatus.EXPIRED, subscription.getStatus());
+            verify(userSubscriptionRepository).save(subscription);
+        }
+
+        @Test
+        void when_expireSubscriptions_withNoExpiredSubscriptions_then_noChanges() {
+            when(userSubscriptionRepository.findAllByStatusAndPeriodEndBefore(
+                    eq(SubscriptionStatus.ACTIVE), any(Instant.class)))
+                    .thenReturn(Collections.emptyList());
+
+            userSubscriptionService.expireSubscriptions();
+
+            verify(userSubscriptionRepository, never()).save(any());
         }
     }
 
