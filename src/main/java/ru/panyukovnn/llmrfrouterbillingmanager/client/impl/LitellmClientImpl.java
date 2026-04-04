@@ -16,7 +16,7 @@ import java.util.Map;
 @Component
 public class LitellmClientImpl implements LitellmClient {
 
-    private static final String SERVICE_NAME = "LiteLLM";
+    private static final String LITE_LLM_SERVICE_NAME = "LiteLLM";
 
     private final RestClient restClient;
 
@@ -37,7 +37,7 @@ public class LitellmClientImpl implements LitellmClient {
                         .body(request)
                         .retrieve()
                         .body(LitellmKeyGenerateResponse.class),
-                SERVICE_NAME
+                LITE_LLM_SERVICE_NAME
         );
     }
 
@@ -51,7 +51,7 @@ public class LitellmClientImpl implements LitellmClient {
                         .body(Map.of("keys", new String[]{litellmKeyId}))
                         .retrieve()
                         .toBodilessEntity(),
-                SERVICE_NAME
+                LITE_LLM_SERVICE_NAME
         );
     }
 
@@ -69,7 +69,7 @@ public class LitellmClientImpl implements LitellmClient {
                         ))
                         .retrieve()
                         .toBodilessEntity(),
-                SERVICE_NAME
+                LITE_LLM_SERVICE_NAME
         );
     }
 }
