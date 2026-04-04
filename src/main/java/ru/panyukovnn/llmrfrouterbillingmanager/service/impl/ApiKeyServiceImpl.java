@@ -15,6 +15,7 @@ import ru.panyukovnn.llmrfrouterbillingmanager.repository.ApiKeyRepository;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.ApiKeyService;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.UserSubscriptionService;
 import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
+import ru.panyukovnn.referencemodelstarter.exception.CriticalException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -165,7 +166,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
 
             return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 алгоритм недоступен", e);
+            throw new CriticalException("a7b3", "SHA-256 алгоритм недоступен", e.getMessage(), e);
         }
     }
 }
