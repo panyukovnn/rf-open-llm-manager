@@ -7,6 +7,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.panyukovnn.llmrfrouterbillingmanager.config.JwtTokenProvider;
 import ru.panyukovnn.llmrfrouterbillingmanager.repository.AppUserRepository;
+import ru.panyukovnn.llmrfrouterbillingmanager.repository.UserSubscriptionRepository;
+import ru.panyukovnn.llmrfrouterbillingmanager.scheduler.SubscriptionExpirationScheduler;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -19,4 +21,8 @@ public abstract class AbstractTest {
     protected JwtTokenProvider jwtTokenProvider;
     @Autowired
     protected AppUserRepository appUserRepository;
+    @Autowired
+    protected UserSubscriptionRepository userSubscriptionRepository;
+    @Autowired
+    protected SubscriptionExpirationScheduler subscriptionExpirationScheduler;
 }

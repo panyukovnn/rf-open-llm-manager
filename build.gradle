@@ -45,6 +45,9 @@ dependencies {
     implementation 'org.postgresql:postgresql'
     implementation 'org.liquibase:liquibase-core'
 
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:6.3.1'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.3.1'
+
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
     annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
 

@@ -2,6 +2,7 @@ package ru.panyukovnn.llmrfrouterbillingmanager.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ public class SubscriptionExpirationScheduler {
 
     @Async("schedulerExecutor")
     @Scheduled(cron = "${billing-manager.subscription.expiration-cron:0 0 3 * * *}")
+    @SchedulerLock(name = "expireSubscriptions")
     public CompletableFuture<Void> expireSubscriptions() {
         log.info("Запуск задачи истечения подписок");
         int expiredCount = userSubscriptionService.expireSubscriptions();
