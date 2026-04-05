@@ -5,12 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import ru.panyukovnn.llmrfrouterbillingmanager.client.LitellmClient;
+import ru.panyukovnn.llmrfrouterbillingmanager.dto.LitellmKeyDeleteRequest;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.LitellmKeyGenerateRequest;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.LitellmKeyGenerateResponse;
+import ru.panyukovnn.llmrfrouterbillingmanager.dto.LitellmKeyUpdateBody;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.LitellmKeyUpdateRequest;
 import ru.panyukovnn.referencemodelstarter.util.RestCallWrapper;
 
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -39,10 +41,14 @@ public class LitellmClientImpl implements LitellmClient {
     public void revokeKey(String litellmKeyId) {
         log.info("Запрос на отзыв ключа {} в LiteLLM", litellmKeyId);
 
+        LitellmKeyDeleteRequest deleteRequest = LitellmKeyDeleteRequest.builder()
+                .keys(List.of(litellmKeyId))
+                .build();
+
         RestCallWrapper.executeRequest(
                 () -> liteLlmRestClient.post()
                         .uri("/key/delete")
-                        .body(Map.of("keys", new String[]{litellmKeyId}))
+                        .body(deleteRequest)
                         .retrieve()
                         .toBodilessEntity(),
                 LITE_LLM_SERVICE_NAME
@@ -53,14 +59,16 @@ public class LitellmClientImpl implements LitellmClient {
     public void updateKeyBudget(String litellmKeyId, LitellmKeyUpdateRequest request) {
         log.info("Запрос на обновление бюджета ключа {} в LiteLLM", litellmKeyId);
 
+        LitellmKeyUpdateBody updateBody = LitellmKeyUpdateBody.builder()
+                .key(litellmKeyId)
+                .maxBudget(request.getMaxBudget())
+                .tpmLimit(request.getTpmLimit())
+                .build();
+
         RestCallWrapper.executeRequest(
                 () -> liteLlmRestClient.post()
                         .uri("/key/update")
-                        .body(Map.of(
-                                "key", litellmKeyId,
-                                "max_budget", request.getMaxBudget(),
-                                "tpm_limit", request.getTpmLimit()
-                        ))
+                        .body(updateBody)
                         .retrieve()
                         .toBodilessEntity(),
                 LITE_LLM_SERVICE_NAME
