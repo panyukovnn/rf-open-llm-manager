@@ -35,6 +35,11 @@ billing-manager:
   litellm:
     base-url: http://localhost:4000
     master-key: test-master-key
+  integration:
+    lite-llm:
+      host: http://localhost:4000
+      master-key: test-master-key
+      callback-secret: test-callback-secret
   yookassa:
     shop-id: test-shop-id
     secret-key: test-secret-key

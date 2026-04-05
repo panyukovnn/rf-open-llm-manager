@@ -41,7 +41,7 @@ public class SecurityConfig {
             org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer<HttpSecurity>
                     .AuthorizationManagerRequestMatcherRegistry authorize) {
         authorize
-                .requestMatchers("/actuator/**", "/oauth2/**", "/login/**").permitAll()
+                .requestMatchers("/actuator/**", "/oauth2/**", "/login/**", "/api/v1/internal/**").permitAll()
                 .anyRequest().authenticated();
     }
 

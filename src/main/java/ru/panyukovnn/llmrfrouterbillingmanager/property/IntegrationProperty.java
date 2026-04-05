@@ -27,5 +27,7 @@ public class IntegrationProperty {
         @NotBlank
         private String host;
         private String masterKey;
+        @NotBlank
+        private String callbackSecret;
     }
 }
