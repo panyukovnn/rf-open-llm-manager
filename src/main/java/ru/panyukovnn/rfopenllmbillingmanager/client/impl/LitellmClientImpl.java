@@ -106,11 +106,11 @@ public class LitellmClientImpl implements LitellmClient {
         } catch (ResourceAccessException e) {
             log.error("Ошибка соединения с LiteLLM: {}", e.getMessage(), e);
 
-            throw new BusinessException("l001", "LLM-апстрим недоступен", e);
+            throw new BusinessException("ad65", "LLM-апстрим недоступен", e);
         } catch (Exception e) {
             log.error("Непредвиденная ошибка при вызове LiteLLM: {}", e.getMessage(), e);
 
-            throw new BusinessException("l001", "LLM-апстрим недоступен", e);
+            throw new BusinessException("453e", "LLM-апстрим недоступен", e);
         }
     }
 
@@ -154,14 +154,14 @@ public class LitellmClientImpl implements LitellmClient {
         log.warn("Ошибка ответа от LiteLLM: status={}, body='{}'", status, body);
 
         if (status.value() == HTTP_UNAUTHORIZED) {
-            return new BusinessException("l002", "Ключ LiteLLM отклонён");
+            return new BusinessException("8d4a", "Ключ LiteLLM отклонён");
         }
 
         if (status.value() == HTTP_PAYMENT_REQUIRED) {
-            return new BusinessException("l003", "Бюджет подписки исчерпан");
+            return new BusinessException("f569", "Бюджет подписки исчерпан");
         }
 
-        return new BusinessException("l001", "LLM-апстрим недоступен");
+        return new BusinessException("d9ac", "LLM-апстрим недоступен");
     }
 
     /**

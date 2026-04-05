@@ -85,7 +85,7 @@ class LitellmClientImplUnitTest {
     }
 
     @Test
-    void when_streamCompletion_withInvalidKey_then_businessException_l002() {
+    void when_streamCompletion_withInvalidKey_then_businessException() {
         mockServer.expect(requestTo(BASE_URL + "/chat/completions"))
                 .andExpect(method(POST))
                 .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
@@ -96,11 +96,11 @@ class LitellmClientImplUnitTest {
                 BusinessException.class,
                 () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest()));
 
-        assertEquals("l002", exception.getLocation());
+        assertEquals("8d4a", exception.getLocation());
     }
 
     @Test
-    void when_streamCompletion_withBudgetExceeded_then_businessException_l003() {
+    void when_streamCompletion_withBudgetExceeded_then_businessException() {
         mockServer.expect(requestTo(BASE_URL + "/chat/completions"))
                 .andExpect(method(POST))
                 .andRespond(withRawStatus(402)
@@ -111,11 +111,11 @@ class LitellmClientImplUnitTest {
                 BusinessException.class,
                 () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest()));
 
-        assertEquals("l003", exception.getLocation());
+        assertEquals("f569", exception.getLocation());
     }
 
     @Test
-    void when_streamCompletion_withUpstream5xx_then_businessException_l001() {
+    void when_streamCompletion_withUpstream5xx_then_businessException() {
         mockServer.expect(requestTo(BASE_URL + "/chat/completions"))
                 .andExpect(method(POST))
                 .andRespond(withStatus(HttpStatus.BAD_GATEWAY)
@@ -126,7 +126,7 @@ class LitellmClientImplUnitTest {
                 BusinessException.class,
                 () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest()));
 
-        assertEquals("l001", exception.getLocation());
+        assertEquals("d9ac", exception.getLocation());
     }
 
     private ChatCompletionRequest buildRequest() {
