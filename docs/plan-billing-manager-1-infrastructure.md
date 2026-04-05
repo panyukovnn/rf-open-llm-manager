@@ -3,7 +3,7 @@
 ## Структура пакетов
 
 ```
-ru.panyukovnn.llmrfrouterbillingmanager
+ru.panyukovnn.rfopenllmbillingmanager
 ├── config/          — SecurityConfig, WebConfig, YookassaConfig
 ├── controller/      — REST-контроллеры
 ├── client/          — HTTP-клиенты (LiteLLM, YooKassa)
