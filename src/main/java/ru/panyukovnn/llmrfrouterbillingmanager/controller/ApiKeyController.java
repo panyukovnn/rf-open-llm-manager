@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.ApiKeyResponse;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.CreateApiKeyRequest;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.CreateApiKeyResponse;
-import ru.panyukovnn.llmrfrouterbillingmanager.service.ApiKeyService;
-import ru.panyukovnn.llmrfrouterbillingmanager.service.AppUserService;
+import ru.panyukovnn.llmrfrouterbillingmanager.service.ApiKeyManager;
 import ru.panyukovnn.referencemodelstarter.dto.request.CommonRequest;
 import ru.panyukovnn.referencemodelstarter.dto.response.CommonItemsResponse;
 import ru.panyukovnn.referencemodelstarter.dto.response.CommonResponse;
@@ -26,14 +25,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ApiKeyController {
 
-    private final ApiKeyService apiKeyService;
-    private final AppUserService appUserService;
+    private final ApiKeyManager apiKeyManager;
 
     @PostMapping
     public CommonResponse<CreateApiKeyResponse> generateKey(
             @Valid @RequestBody CommonRequest<CreateApiKeyRequest> request) {
-        UUID userId = appUserService.findCurrentUser().getId();
-        CreateApiKeyResponse response = apiKeyService.generateKey(userId, request.getData().getName());
+        CreateApiKeyResponse response = apiKeyManager.handleGenerateKey(request.getData().getName());
 
         return CommonResponse.<CreateApiKeyResponse>builder()
                 .data(response)
@@ -42,8 +39,7 @@ public class ApiKeyController {
 
     @GetMapping
     public CommonResponse<CommonItemsResponse<ApiKeyResponse>> findUserKeys() {
-        UUID userId = appUserService.findCurrentUser().getId();
-        List<ApiKeyResponse> keys = apiKeyService.findUserKeys(userId);
+        List<ApiKeyResponse> keys = apiKeyManager.handleFindUserKeys();
 
         CommonItemsResponse<ApiKeyResponse> itemsResponse = CommonItemsResponse.<ApiKeyResponse>builder()
                 .items(keys)
@@ -56,8 +52,7 @@ public class ApiKeyController {
 
     @DeleteMapping("/{keyId}")
     public CommonResponse<Void> revokeKey(@PathVariable UUID keyId) {
-        UUID userId = appUserService.findCurrentUser().getId();
-        apiKeyService.revokeKey(userId, keyId);
+        apiKeyManager.handleRevokeKey(keyId);
 
         return CommonResponse.<Void>builder()
                 .build();
