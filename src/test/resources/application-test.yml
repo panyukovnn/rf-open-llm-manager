@@ -50,6 +50,8 @@ billing-manager:
   subscription:
     grace-period-days: 3
     period-days: 30
+  cors:
+    allowed-origins: http://localhost:3000
 
 logbook:
   filter:

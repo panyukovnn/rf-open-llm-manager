@@ -29,3 +29,6 @@ databaseChangeLog:
   - include:
       file: 08.create_shedlock.yml
       relativeToChangelogFile: true
+  - include:
+      file: 09.create_session.yml
+      relativeToChangelogFile: true

@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: "09.create_session.yml"
+      author: "Panyukov NN"
+      changes:
+        - createTable:
+            tableName: session
+            remarks: "Чаты пользователей"
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: UUID
+                  remarks: "Идентификатор пользователя-владельца чата"
+              - column:
+                  name: title
+                  type: varchar
+                  remarks: "Название чата"
+              - column:
+                  name: model
+                  type: varchar
+                  remarks: "Модель LLM, выбранная для чата"
+              - column:
+                  name: system_prompt
+                  type: text
+                  remarks: "Системный промпт чата"
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+                  constraints:
+                    nullable: false
+                  remarks: "Время создания"
+              - column:
+                  name: create_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, создавший запись"
+              - column:
+                  name: last_update_time
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+                  constraints:
+                    nullable: false
+                  remarks: "Время обновления"
+              - column:
+                  name: last_update_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, изменивший запись"
+        - createIndex:
+            tableName: session
+            indexName: idx_session_user_id_last_update_time
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: last_update_time
+                  descending: true
