@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.InitiatePaymentRequest;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.InitiatePaymentResponse;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.PaymentResponse;
-import ru.panyukovnn.rfopenllmbillingmanager.model.AppUser;
-import ru.panyukovnn.rfopenllmbillingmanager.service.AppUserService;
-import ru.panyukovnn.rfopenllmbillingmanager.service.PaymentService;
+import ru.panyukovnn.rfopenllmbillingmanager.service.PaymentManager;
 import ru.panyukovnn.referencemodelstarter.dto.request.CommonRequest;
 import ru.panyukovnn.referencemodelstarter.dto.response.CommonItemsResponse;
 import ru.panyukovnn.referencemodelstarter.dto.response.CommonResponse;
@@ -24,15 +22,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final PaymentService paymentService;
-    private final AppUserService appUserService;
+    private final PaymentManager paymentManager;
 
     @PostMapping
     public CommonResponse<InitiatePaymentResponse> initiatePayment(
             @Valid @RequestBody CommonRequest<InitiatePaymentRequest> request) {
-        AppUser currentUser = appUserService.findCurrentUser();
-        InitiatePaymentResponse response = paymentService
-                .initiatePayment(currentUser.getId(), request.getData().getSubscriptionPlanId());
+        InitiatePaymentResponse response = paymentManager
+                .handleInitiatePayment(request.getData().getSubscriptionPlanId());
 
         return CommonResponse.<InitiatePaymentResponse>builder()
                 .data(response)
@@ -41,8 +37,7 @@ public class PaymentController {
 
     @GetMapping
     public CommonResponse<CommonItemsResponse<PaymentResponse>> findUserPayments() {
-        AppUser currentUser = appUserService.findCurrentUser();
-        List<PaymentResponse> payments = paymentService.findUserPayments(currentUser.getId());
+        List<PaymentResponse> payments = paymentManager.handleFindUserPayments();
         CommonItemsResponse<PaymentResponse> items = CommonItemsResponse.<PaymentResponse>builder()
                 .items(payments)
                 .itemsCount(payments.size())

@@ -11,6 +11,7 @@ import ru.panyukovnn.rfopenllmbillingmanager.dto.yookassa.YookassaAmount;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.yookassa.YookassaConfirmationRequest;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.yookassa.YookassaPaymentApiResponse;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.yookassa.YookassaPaymentBody;
+import ru.panyukovnn.referencemodelstarter.exception.CriticalException;
 import ru.panyukovnn.referencemodelstarter.util.RestCallWrapper;
 
 import java.util.UUID;
@@ -73,7 +74,7 @@ public class YookassaClientImpl implements YookassaClient {
 
     private YookassaCreatePaymentResponse toResponse(YookassaPaymentApiResponse response) {
         if (response == null) {
-            throw new IllegalStateException("Пустой ответ от ЮKassa");
+            throw new CriticalException("y3c1", "Пустой ответ от ЮKassa");
         }
         String confirmationUrl = response.getConfirmation() != null
                 ? response.getConfirmation().getConfirmationUrl()
