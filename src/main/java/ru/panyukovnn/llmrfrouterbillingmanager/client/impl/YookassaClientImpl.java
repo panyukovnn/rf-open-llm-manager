@@ -1,20 +1,18 @@
 package ru.panyukovnn.llmrfrouterbillingmanager.client.impl;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import ru.panyukovnn.llmrfrouterbillingmanager.client.YookassaClient;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.YookassaCreatePaymentRequest;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.YookassaCreatePaymentResponse;
+import ru.panyukovnn.llmrfrouterbillingmanager.dto.yookassa.YookassaAmount;
+import ru.panyukovnn.llmrfrouterbillingmanager.dto.yookassa.YookassaConfirmationRequest;
+import ru.panyukovnn.llmrfrouterbillingmanager.dto.yookassa.YookassaPaymentApiResponse;
+import ru.panyukovnn.llmrfrouterbillingmanager.dto.yookassa.YookassaPaymentBody;
 import ru.panyukovnn.referencemodelstarter.util.RestCallWrapper;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -65,8 +63,8 @@ public class YookassaClientImpl implements YookassaClient {
 
     private YookassaPaymentBody buildBody(YookassaCreatePaymentRequest request) {
         return YookassaPaymentBody.builder()
-                .amount(new Amount(request.getAmountValue(), request.getAmountCurrency()))
-                .confirmation(new ConfirmationRequest(CONFIRMATION_TYPE_REDIRECT, request.getReturnUrl()))
+                .amount(new YookassaAmount(request.getAmountValue(), request.getAmountCurrency()))
+                .confirmation(new YookassaConfirmationRequest(CONFIRMATION_TYPE_REDIRECT, request.getReturnUrl()))
                 .capture(true)
                 .description(request.getDescription())
                 .metadata(request.getMetadata())
@@ -86,51 +84,5 @@ public class YookassaClientImpl implements YookassaClient {
                 .status(response.getStatus())
                 .confirmationUrl(confirmationUrl)
                 .build();
-    }
-
-    @Getter
-    @Builder
-    static class YookassaPaymentBody {
-
-        private final Amount amount;
-        private final ConfirmationRequest confirmation;
-        private final Boolean capture;
-        private final String description;
-        private final Map<String, String> metadata;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    static class Amount {
-
-        private final String value;
-        private final String currency;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    static class ConfirmationRequest {
-
-        private final String type;
-        @JsonProperty("return_url")
-        private final String returnUrl;
-    }
-
-    @Getter
-    @Setter
-    static class YookassaPaymentApiResponse {
-
-        private String id;
-        private String status;
-        private ConfirmationResponse confirmation;
-    }
-
-    @Getter
-    @Setter
-    static class ConfirmationResponse {
-
-        private String type;
-        @JsonProperty("confirmation_url")
-        private String confirmationUrl;
     }
 }
