@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.CreateSessionRequest;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.SessionListItemResponse;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.SessionResponse;
@@ -13,7 +13,6 @@ import ru.panyukovnn.rfopenllmbillingmanager.mapper.SessionMapper;
 import ru.panyukovnn.rfopenllmbillingmanager.model.Session;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.SessionRepository;
 import ru.panyukovnn.rfopenllmbillingmanager.service.SessionService;
-import ru.panyukovnn.referencemodelstarter.exception.BusinessException;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +26,6 @@ public class SessionServiceImpl implements SessionService {
     private final SessionMapper sessionMapper;
 
     @Override
-    @Transactional
     public SessionResponse create(UUID userId, CreateSessionRequest request) {
         Session session = Session.builder()
                 .userId(userId)
@@ -43,7 +41,6 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public SessionResponse findById(UUID userId, UUID sessionId) {
         Session session = findOwnedOrThrow(userId, sessionId);
 
@@ -51,7 +48,6 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<SessionListItemResponse> findUserSessions(UUID userId, int page, int size) {
         return sessionRepository.findAllByUserIdOrderByLastUpdateTimeDesc(userId, PageRequest.of(page, size))
                 .map(sessionMapper::toSessionListItemResponse)
@@ -59,7 +55,6 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    @Transactional
     public SessionResponse update(UUID userId, UUID sessionId, UpdateSessionRequest request) {
         Session session = findOwnedOrThrow(userId, sessionId);
         applyUpdate(session, request);
@@ -71,7 +66,6 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    @Transactional
     public void delete(UUID userId, UUID sessionId) {
         Session session = findOwnedOrThrow(userId, sessionId);
         sessionRepository.delete(session);
