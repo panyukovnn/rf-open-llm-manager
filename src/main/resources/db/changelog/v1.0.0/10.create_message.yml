@@ -1,0 +1,64 @@
+databaseChangeLog:
+  - changeSet:
+      id: "10.create_message.yml"
+      author: "Panyukov NN"
+      changes:
+        - createTable:
+            tableName: message
+            remarks: "Сообщения чатов"
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: session_id
+                  type: UUID
+                  remarks: "Идентификатор чата, к которому относится сообщение"
+              - column:
+                  name: role
+                  type: varchar
+                  remarks: "Роль автора сообщения"
+              - column:
+                  name: content
+                  type: text
+                  remarks: "Содержимое сообщения"
+              - column:
+                  name: tokens_in
+                  type: int
+                  remarks: "Количество входящих токенов"
+              - column:
+                  name: tokens_out
+                  type: int
+                  remarks: "Количество исходящих токенов"
+              - column:
+                  name: model
+                  type: varchar
+                  remarks: "Модель LLM, использованная для генерации"
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+                  constraints:
+                    nullable: false
+                  remarks: "Время создания"
+              - column:
+                  name: create_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, создавший запись"
+              - column:
+                  name: last_update_time
+                  type: timestamp
+                  defaultValueComputed: "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+                  constraints:
+                    nullable: false
+                  remarks: "Время обновления"
+              - column:
+                  name: last_update_user
+                  type: varchar
+                  constraints:
+                    nullable: false
+                  remarks: "Пользователь, изменивший запись"
