@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.panyukovnn.llmrfrouterbillingmanager.dto.LitellmUsageCallbackPayload;
 import ru.panyukovnn.llmrfrouterbillingmanager.property.IntegrationProperty;
 import ru.panyukovnn.llmrfrouterbillingmanager.service.UsageTrackingService;
+import ru.panyukovnn.referencemodelstarter.dto.response.CommonResponse;
 
 import java.util.List;
 
@@ -27,18 +28,22 @@ public class UsageCallbackController {
     private final IntegrationProperty integrationProperty;
 
     @PostMapping
-    public ResponseEntity<Void> handleCallback(
+    public ResponseEntity<CommonResponse<Void>> handleCallback(
             @RequestHeader(value = CALLBACK_SECRET_HEADER, required = false) String callbackSecret,
             @RequestBody List<LitellmUsageCallbackPayload> payloads) {
-        String expectedSecret = integrationProperty.getLiteLlm().getCallbackSecret();
-
-        if (!expectedSecret.equals(callbackSecret)) {
+        if (!isSecretValid(callbackSecret)) {
             log.warn("Получен usage callback с недопустимым секретом");
 
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         usageTrackingService.processUsageCallback(payloads);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(CommonResponse.<Void>builder().build());
+    }
+
+    private boolean isSecretValid(String callbackSecret) {
+        String expectedSecret = integrationProperty.getLiteLlm().getCallbackSecret();
+
+        return expectedSecret.equals(callbackSecret);
     }
 }
