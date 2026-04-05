@@ -51,6 +51,7 @@ billing-manager:
     shop-id: ${YOOKASSA_SHOP_ID}
     secret-key: ${YOOKASSA_SECRET_KEY}
     return-url: ${YOOKASSA_RETURN_URL:http://localhost:3000/payment/return}
+    api-url: ${YOOKASSA_API_URL:https://api.yookassa.ru/v3}
   scheduler:
     subscription-expiration-job:
       cron: ${SUBSCRIPTION_EXPIRATION_CRON:0 0 3 * * *}
