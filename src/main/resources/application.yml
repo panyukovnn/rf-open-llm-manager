@@ -46,6 +46,7 @@ billing-manager:
     lite-llm:
       host: ${LITELLM_BASE_URL:http://localhost:4000}
       master-key: ${LITELLM_MASTER_KEY}
+      callback-secret: ${LITELLM_CALLBACK_SECRET}
   yookassa:
     shop-id: ${YOOKASSA_SHOP_ID}
     secret-key: ${YOOKASSA_SECRET_KEY}

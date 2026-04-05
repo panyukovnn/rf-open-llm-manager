@@ -2,7 +2,6 @@ package ru.panyukovnn.llmrfrouterbillingmanager.scheduler;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.annotation.Transactional;
 import ru.panyukovnn.llmrfrouterbillingmanager.AbstractTest;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.SubscriptionStatus;
 import ru.panyukovnn.llmrfrouterbillingmanager.model.UserSubscription;
