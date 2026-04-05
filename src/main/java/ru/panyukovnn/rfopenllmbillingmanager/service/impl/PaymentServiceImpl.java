@@ -45,7 +45,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final YookassaProperty yookassaProperty;
 
     @Override
-    @Transactional
     public InitiatePaymentResponse initiatePayment(UUID userId, UUID planId) {
         SubscriptionPlan plan = subscriptionPlanService.findById(planId);
         Payment payment = paymentRepository.save(Payment.builder()
