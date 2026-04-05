@@ -15,20 +15,14 @@ databaseChangeLog:
               - column:
                   name: user_id
                   type: UUID
-                  constraints:
-                    nullable: false
                   remarks: "Идентификатор пользователя-владельца чата"
               - column:
                   name: title
                   type: varchar
-                  constraints:
-                    nullable: false
                   remarks: "Название чата"
               - column:
                   name: model
                   type: varchar
-                  constraints:
-                    nullable: false
                   remarks: "Модель LLM, выбранная для чата"
               - column:
                   name: system_prompt
