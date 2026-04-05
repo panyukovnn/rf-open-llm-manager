@@ -39,10 +39,12 @@ billing-manager:
     shop-id: test-shop-id
     secret-key: test-secret-key
     return-url: http://localhost:3000/payment/return
+  scheduler:
+    subscription-expiration-job:
+      cron: "-"
   subscription:
     grace-period-days: 3
     period-days: 30
-    expiration-cron: "-"
 
 logbook:
   filter:

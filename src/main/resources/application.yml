@@ -50,10 +50,12 @@ billing-manager:
     shop-id: ${YOOKASSA_SHOP_ID}
     secret-key: ${YOOKASSA_SECRET_KEY}
     return-url: ${YOOKASSA_RETURN_URL:http://localhost:3000/payment/return}
+  scheduler:
+    subscription-expiration-job:
+      cron: ${SUBSCRIPTION_EXPIRATION_CRON:0 0 3 * * *}
   subscription:
     grace-period-days: ${SUBSCRIPTION_GRACE_PERIOD_DAYS:3}
     period-days: ${SUBSCRIPTION_PERIOD_DAYS:30}
-    expiration-cron: ${SUBSCRIPTION_EXPIRATION_CRON:0 0 3 * * *}
 
 logbook:
   filter:

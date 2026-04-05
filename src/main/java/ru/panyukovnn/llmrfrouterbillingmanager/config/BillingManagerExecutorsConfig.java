@@ -13,8 +13,7 @@ import java.util.concurrent.Executors;
 public class BillingManagerExecutorsConfig {
 
     @Bean
-    @ConditionalOnMissingBean(name = "schedulerExecutor")
-    public Executor schedulerExecutor() {
+    public Executor subscriptionExpirationJobExecutor() {
         return Executors.newSingleThreadExecutor();
     }
 }

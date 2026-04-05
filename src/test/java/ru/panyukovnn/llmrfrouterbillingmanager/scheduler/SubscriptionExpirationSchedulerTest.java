@@ -17,10 +17,9 @@ class SubscriptionExpirationSchedulerTest extends AbstractTest {
     private static final UUID ACTIVE_SUBSCRIPTION_ID = UUID.fromString("3fdba915-40d2-499d-be46-c3ac95652e9f");
 
     @Test
-    @Transactional
     @Sql("classpath:sql/scheduler/subscriptionexpiration/expire-subscriptions/user_subscription.sql")
     void when_expireSubscriptions_then_expiredSubscriptionsUpdatedAndActiveSubscriptionsUntouched() {
-        subscriptionExpirationScheduler.expireSubscriptions();
+        subscriptionExpirationScheduler.expireSubscriptions().join();
 
         UserSubscription expiredSubscription = userSubscriptionRepository.findById(EXPIRED_SUBSCRIPTION_ID)
                 .orElseThrow();
