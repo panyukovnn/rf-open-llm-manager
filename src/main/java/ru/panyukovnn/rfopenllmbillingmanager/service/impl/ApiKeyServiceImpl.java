@@ -83,12 +83,12 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     public String findActiveVirtualKey(UUID userId) {
         ApiKey apiKey = apiKeyRepository.findFirstByAppUserIdAndActiveTrueOrderByCreateTimeAsc(userId)
                 .orElseThrow(() -> new BusinessException(
-                        "k001",
+                        "0a27",
                         "Активный API-ключ не найден"));
 
         if (apiKey.getVirtualKey() == null) {
             throw new BusinessException(
-                    "k002",
+                    "471e",
                     "Активный API-ключ не содержит virtualKey");
         }
 
@@ -183,7 +183,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
 
             return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException e) {
-            throw new CriticalException("a7b3", "SHA-256 алгоритм недоступен", e.getMessage(), e);
+            throw new CriticalException("865e", "SHA-256 алгоритм недоступен", e.getMessage(), e);
         }
     }
 }

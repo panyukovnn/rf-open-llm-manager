@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "app.chat")
+@ConfigurationProperties(prefix = "billing-manager.chat")
 public class ChatProperty {
 
     /**
