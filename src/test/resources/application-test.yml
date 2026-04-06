@@ -52,8 +52,6 @@ billing-manager:
     period-days: 30
   cors:
     allowed-origins: http://localhost:3000
-
-app:
   chat:
     max-history-messages: 20
     reserve-tokens: 1024
