@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: "11.alter_api_key_add_virtual_key.yml"
+      author: "Panyukov NN"
+      changes:
+        - addColumn:
+            tableName: api_key
+            columns:
+              - column:
+                  name: virtual_key
+                  type: varchar
+                  remarks: "Исходный виртуальный ключ LiteLLM — используется для серверных вызовов чата"

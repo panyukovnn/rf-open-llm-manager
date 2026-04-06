@@ -15,4 +15,9 @@ public class BillingManagerExecutorsConfig {
     public Executor subscriptionExpirationJobExecutor() {
         return Executors.newSingleThreadExecutor();
     }
+
+    @Bean
+    public Executor chatStreamingExecutor() {
+        return Executors.newCachedThreadPool();
+    }
 }

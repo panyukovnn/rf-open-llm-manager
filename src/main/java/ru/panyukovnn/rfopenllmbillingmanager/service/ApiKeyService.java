@@ -15,4 +15,6 @@ public interface ApiKeyService {
     List<ApiKeyResponse> findUserKeys(UUID userId);
 
     void deactivateAllUserKeys(UUID userId);
+
+    String findActiveVirtualKey(UUID userId);
 }

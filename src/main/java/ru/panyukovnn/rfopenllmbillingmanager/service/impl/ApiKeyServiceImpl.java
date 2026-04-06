@@ -45,7 +45,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
         LitellmKeyGenerateResponse litellmResponse = requestLitellmKeyGeneration(userId);
         String generatedKey = litellmResponse.getKey();
 
-        ApiKey savedKey = saveApiKey(userId, keyName, generatedKey, litellmResponse.getKeyId());
+        ApiKey savedKey = saveApiKey(userId, keyName, generatedKey, litellmResponse.getKeyId(), generatedKey);
 
         log.info("API-ключ {} создан для пользователя {}", savedKey.getId(), userId);
 
@@ -77,6 +77,22 @@ public class ApiKeyServiceImpl implements ApiKeyService {
         apiKeyRepository.save(apiKey);
 
         log.info("API-ключ {} отозван пользователем {}", keyId, userId);
+    }
+
+    @Override
+    public String findActiveVirtualKey(UUID userId) {
+        ApiKey apiKey = apiKeyRepository.findFirstByAppUserIdAndActiveTrueOrderByCreateTimeAsc(userId)
+                .orElseThrow(() -> new BusinessException(
+                        "k001",
+                        "Активный API-ключ не найден"));
+
+        if (apiKey.getVirtualKey() == null) {
+            throw new BusinessException(
+                    "k002",
+                    "Активный API-ключ не содержит virtualKey");
+        }
+
+        return apiKey.getVirtualKey();
     }
 
     @Override
@@ -133,13 +149,14 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     /**
      * Сохраняет API-ключ в базу данных
      */
-    private ApiKey saveApiKey(UUID userId, String keyName, String generatedKey, String litellmKeyId) {
+    private ApiKey saveApiKey(UUID userId, String keyName, String generatedKey, String litellmKeyId, String virtualKey) {
         String keyHash = hashKey(generatedKey);
 
         ApiKey apiKey = ApiKey.builder()
                 .appUserId(userId)
                 .keyHash(keyHash)
                 .litellmKeyId(litellmKeyId)
+                .virtualKey(virtualKey)
                 .name(keyName)
                 .active(true)
                 .build();

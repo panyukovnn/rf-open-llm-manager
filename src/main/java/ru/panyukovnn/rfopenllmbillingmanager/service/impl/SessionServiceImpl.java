@@ -14,6 +14,7 @@ import ru.panyukovnn.rfopenllmbillingmanager.model.Session;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.SessionRepository;
 import ru.panyukovnn.rfopenllmbillingmanager.service.SessionService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +46,20 @@ public class SessionServiceImpl implements SessionService {
         Session session = findOwnedOrThrow(userId, sessionId);
 
         return sessionMapper.toSessionResponse(session);
+    }
+
+    @Override
+    public Session findEntityById(UUID userId, UUID sessionId) {
+        return findOwnedOrThrow(userId, sessionId);
+    }
+
+    @Override
+    public void touchLastUpdateTime(UUID sessionId) {
+        sessionRepository.findById(sessionId)
+                .ifPresent(session -> {
+                    session.setLastUpdateTime(Instant.now());
+                    sessionRepository.save(session);
+                });
     }
 
     @Override
