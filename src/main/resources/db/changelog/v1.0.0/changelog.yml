@@ -35,3 +35,6 @@ databaseChangeLog:
   - include:
       file: 10.create_message.yml
       relativeToChangelogFile: true
+  - include:
+      file: 11.alter_api_key_add_virtual_key.yml
+      relativeToChangelogFile: true

@@ -14,7 +14,9 @@ import ru.panyukovnn.rfopenllmbillingmanager.dto.MessageResponse;
 import ru.panyukovnn.rfopenllmbillingmanager.mapper.MessageMapper;
 import ru.panyukovnn.rfopenllmbillingmanager.model.Message;
 import ru.panyukovnn.rfopenllmbillingmanager.model.MessageRole;
+import ru.panyukovnn.rfopenllmbillingmanager.property.ChatProperty;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.MessageRepository;
+import ru.panyukovnn.rfopenllmbillingmanager.service.impl.ChatStreamProcessor;
 import ru.panyukovnn.rfopenllmbillingmanager.service.impl.MessageServiceImpl;
 
 import java.time.Instant;
@@ -40,6 +42,18 @@ class MessageServiceImplUnitTest {
     private MessageMapper messageMapper;
     @Mock
     private SessionService sessionService;
+    @Mock
+    private UserSubscriptionService userSubscriptionService;
+    @Mock
+    private ApiKeyService apiKeyService;
+    @Mock
+    private ContextBuilder contextBuilder;
+    @Mock
+    private IdempotencyCache idempotencyCache;
+    @Mock
+    private ChatStreamProcessor chatStreamProcessor;
+    @Mock
+    private ChatProperty chatProperty;
 
     @InjectMocks
     private MessageServiceImpl messageService;

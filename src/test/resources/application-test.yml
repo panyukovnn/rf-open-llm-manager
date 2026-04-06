@@ -52,6 +52,11 @@ billing-manager:
     period-days: 30
   cors:
     allowed-origins: http://localhost:3000
+  chat:
+    max-history-messages: 20
+    reserve-tokens: 1024
+    sse-timeout-ms: 120000
+    idempotency-ttl-minutes: 60
 
 logbook:
   filter:

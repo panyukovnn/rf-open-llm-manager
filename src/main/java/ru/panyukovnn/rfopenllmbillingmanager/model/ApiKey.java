@@ -34,6 +34,10 @@ public class ApiKey extends AuditableEntity {
      */
     private String keyHash;
     /**
+     * Исходный виртуальный ключ LiteLLM — используется для серверных вызовов чата
+     */
+    private String virtualKey;
+    /**
      * Идентификатор ключа в LiteLLM
      */
     private String litellmKeyId;
