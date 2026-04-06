@@ -38,6 +38,8 @@ class ChatStreamProcessorUnitTest {
     @Mock
     private MessageRepository messageRepository;
     @Mock
+    private UsageTrackingService usageTrackingService;
+    @Mock
     private SessionService sessionService;
     @Mock
     private IdempotencyCache idempotencyCache;
@@ -50,33 +52,35 @@ class ChatStreamProcessorUnitTest {
     void setUp() {
         Executor syncExecutor = Runnable::run;
         processor = new ChatStreamProcessor(
-                litellmClient, messageRepository, sessionService,
-                idempotencyCache, chatProperty, syncExecutor);
+                litellmClient, messageRepository, usageTrackingService,
+                sessionService, idempotencyCache, chatProperty, syncExecutor);
     }
 
     @Nested
     class Process {
 
         @Test
-        void when_sendMessage_then_assistantMessagePersisted() {
+        void when_sendMessage_then_assistantMessagePersistedWithUsage() {
             UUID sessionId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
             UUID savedId = UUID.randomUUID();
-            ChatStreamProcessor.StreamTask task = buildTask(sessionId);
+            ChatStreamProcessor.StreamTask task = buildTask(userId, sessionId);
             Iterator<ChatCompletionChunk> chunks = buildChunks("Привет", "!").iterator();
 
             when(chatProperty.getReserveTokens()).thenReturn(1024);
             when(litellmClient.streamCompletion(eq("sk-key"), any())).thenReturn(chunks);
-            when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
-                Message message = invocation.getArgument(0);
-                message.setId(savedId);
+            when(usageTrackingService.recordChatUsage(any(UUID.class), any(UUID.class), any(Message.class)))
+                    .thenAnswer(invocation -> {
+                        Message message = invocation.getArgument(2);
+                        message.setId(savedId);
 
-                return message;
-            });
+                        return message;
+                    });
 
             processor.process(task);
 
             ArgumentCaptor<Message> captor = ArgumentCaptor.forClass(Message.class);
-            verify(messageRepository).save(captor.capture());
+            verify(usageTrackingService).recordChatUsage(eq(userId), eq(sessionId), captor.capture());
             Message saved = captor.getValue();
             assertEquals(MessageRole.ASSISTANT, saved.getRole());
             assertEquals("Привет!", saved.getContent());
@@ -87,17 +91,18 @@ class ChatStreamProcessorUnitTest {
         void when_sendMessage_then_sessionLastUpdateTimeChanged() {
             UUID sessionId = UUID.randomUUID();
             UUID savedId = UUID.randomUUID();
-            ChatStreamProcessor.StreamTask task = buildTask(sessionId);
+            ChatStreamProcessor.StreamTask task = buildTask(UUID.randomUUID(), sessionId);
             Iterator<ChatCompletionChunk> chunks = buildChunks("ok").iterator();
 
             when(chatProperty.getReserveTokens()).thenReturn(1024);
             when(litellmClient.streamCompletion(eq("sk-key"), any())).thenReturn(chunks);
-            when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
-                Message message = invocation.getArgument(0);
-                message.setId(savedId);
+            when(usageTrackingService.recordChatUsage(any(UUID.class), any(UUID.class), any(Message.class)))
+                    .thenAnswer(invocation -> {
+                        Message message = invocation.getArgument(2);
+                        message.setId(savedId);
 
-                return message;
-            });
+                        return message;
+                    });
 
             processor.process(task);
 
@@ -105,9 +110,9 @@ class ChatStreamProcessorUnitTest {
         }
 
         @Test
-        void when_sendMessage_withLlmFailure_then_errorChunkSentAndNoAssistantMessageSaved() {
+        void when_sendMessage_withLlmFailure_then_errorChunkSentAndNoUsageRecorded() {
             UUID sessionId = UUID.randomUUID();
-            ChatStreamProcessor.StreamTask task = buildTask(sessionId);
+            ChatStreamProcessor.StreamTask task = buildTask(UUID.randomUUID(), sessionId);
 
             when(chatProperty.getReserveTokens()).thenReturn(1024);
             when(litellmClient.streamCompletion(eq("sk-key"), any()))
@@ -115,15 +120,15 @@ class ChatStreamProcessorUnitTest {
 
             processor.process(task);
 
-            verify(messageRepository, never()).save(any());
+            verify(usageTrackingService, never()).recordChatUsage(any(), any(), any());
             verify(sessionService, never()).touchLastUpdateTime(any());
         }
     }
 
-    private ChatStreamProcessor.StreamTask buildTask(UUID sessionId) {
+    private ChatStreamProcessor.StreamTask buildTask(UUID userId, UUID sessionId) {
         return ChatStreamProcessor.StreamTask.builder()
                 .emitter(new SseEmitter(120000L))
-                .userId(UUID.randomUUID())
+                .userId(userId)
                 .sessionId(sessionId)
                 .virtualKey("sk-key")
                 .model("gpt-4o")

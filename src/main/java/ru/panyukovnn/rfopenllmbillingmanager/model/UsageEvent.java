@@ -26,6 +26,14 @@ public class UsageEvent extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     /**
+     * Идентификатор сессии чата
+     */
+    private UUID sessionId;
+    /**
+     * Идентификатор сообщения
+     */
+    private UUID messageId;
+    /**
      * Идентификатор API-ключа
      */
     private UUID apiKeyId;

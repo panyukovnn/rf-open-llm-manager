@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: "12.alter_usage_event_add_session_message.yml"
+      author: "Panyukov NN"
+      changes:
+        - addColumn:
+            tableName: usage_event
+            columns:
+              - column:
+                  name: session_id
+                  type: UUID
+                  remarks: "Идентификатор сессии чата"
+              - column:
+                  name: message_id
+                  type: UUID
+                  remarks: "Идентификатор сообщения"

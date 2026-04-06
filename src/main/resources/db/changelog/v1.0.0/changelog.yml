@@ -38,3 +38,6 @@ databaseChangeLog:
   - include:
       file: 11.alter_api_key_add_virtual_key.yml
       relativeToChangelogFile: true
+  - include:
+      file: 12.alter_usage_event_add_session_message.yml
+      relativeToChangelogFile: true
