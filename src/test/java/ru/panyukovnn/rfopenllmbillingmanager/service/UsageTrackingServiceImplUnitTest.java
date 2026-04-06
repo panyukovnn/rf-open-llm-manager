@@ -10,8 +10,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.LitellmUsageCallbackPayload;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.UsageEventResponse;
 import ru.panyukovnn.rfopenllmbillingmanager.model.ApiKey;
+import ru.panyukovnn.rfopenllmbillingmanager.model.Message;
+import ru.panyukovnn.rfopenllmbillingmanager.model.MessageRole;
 import ru.panyukovnn.rfopenllmbillingmanager.model.UsageEvent;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.ApiKeyRepository;
+import ru.panyukovnn.rfopenllmbillingmanager.repository.MessageRepository;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.UsageEventRepository;
 import ru.panyukovnn.rfopenllmbillingmanager.service.impl.UsageTrackingServiceImpl;
 
@@ -35,6 +38,8 @@ class UsageTrackingServiceImplUnitTest {
 
     @Mock
     private UsageEventRepository usageEventRepository;
+    @Mock
+    private MessageRepository messageRepository;
     @Mock
     private ApiKeyRepository apiKeyRepository;
     @Mock
@@ -125,6 +130,71 @@ class UsageTrackingServiceImplUnitTest {
             usageTrackingService.processUsageCallback(List.of(payload));
 
             verify(usageEventRepository, never()).save(any(UsageEvent.class));
+            verify(userSubscriptionService, never()).deductTokens(any(UUID.class), anyLong());
+        }
+    }
+
+    @Nested
+    class RecordChatUsage {
+
+        @Test
+        void when_recordChatUsage_then_usageEventPersistedWithCorrectTokens() {
+            UUID userId = UUID.randomUUID();
+            UUID sessionId = UUID.randomUUID();
+            UUID messageId = UUID.randomUUID();
+            Message assistantMessage = Message.builder()
+                    .sessionId(sessionId)
+                    .role(MessageRole.ASSISTANT)
+                    .content("Ответ модели")
+                    .tokensIn(100)
+                    .tokensOut(50)
+                    .model("gpt-4o")
+                    .build();
+
+            when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
+                Message message = invocation.getArgument(0);
+                message.setId(messageId);
+
+                return message;
+            });
+
+            usageTrackingService.recordChatUsage(userId, sessionId, assistantMessage);
+
+            ArgumentCaptor<UsageEvent> captor = ArgumentCaptor.forClass(UsageEvent.class);
+            verify(usageEventRepository).save(captor.capture());
+            UsageEvent saved = captor.getValue();
+            assertEquals(userId, saved.getAppUserId());
+            assertEquals(sessionId, saved.getSessionId());
+            assertEquals(messageId, saved.getMessageId());
+            assertEquals("gpt-4o", saved.getModel());
+            assertEquals(100L, saved.getPromptTokens());
+            assertEquals(50L, saved.getCompletionTokens());
+            assertEquals(150L, saved.getTotalTokens());
+            verify(userSubscriptionService).deductTokens(userId, 150L);
+        }
+
+        @Test
+        void when_recordChatUsage_withNullTokens_then_noTokensDeducted() {
+            UUID userId = UUID.randomUUID();
+            UUID sessionId = UUID.randomUUID();
+            UUID messageId = UUID.randomUUID();
+            Message assistantMessage = Message.builder()
+                    .sessionId(sessionId)
+                    .role(MessageRole.ASSISTANT)
+                    .content("Ответ модели")
+                    .model("gpt-4o")
+                    .build();
+
+            when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
+                Message message = invocation.getArgument(0);
+                message.setId(messageId);
+
+                return message;
+            });
+
+            usageTrackingService.recordChatUsage(userId, sessionId, assistantMessage);
+
+            verify(usageEventRepository).save(any(UsageEvent.class));
             verify(userSubscriptionService, never()).deductTokens(any(UUID.class), anyLong());
         }
     }

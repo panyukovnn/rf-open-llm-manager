@@ -19,6 +19,7 @@ import ru.panyukovnn.rfopenllmbillingmanager.property.ChatProperty;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.MessageRepository;
 import ru.panyukovnn.rfopenllmbillingmanager.service.IdempotencyCache;
 import ru.panyukovnn.rfopenllmbillingmanager.service.SessionService;
+import ru.panyukovnn.rfopenllmbillingmanager.service.UsageTrackingService;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -35,6 +36,7 @@ public class ChatStreamProcessor {
 
     private final LitellmClient litellmClient;
     private final MessageRepository messageRepository;
+    private final UsageTrackingService usageTrackingService;
     private final SessionService sessionService;
     private final IdempotencyCache idempotencyCache;
     private final ChatProperty chatProperty;
@@ -147,6 +149,9 @@ public class ChatStreamProcessor {
         }
     }
 
+    /**
+     * Сохраняет assistant-сообщение и записывает usage в одной транзакции
+     */
     private UUID persistAssistantMessage(StreamTask task, String content, TokenUsage usage) {
         Message assistantMessage = Message.builder()
                 .sessionId(task.sessionId())
@@ -156,7 +161,8 @@ public class ChatStreamProcessor {
                 .tokensOut(usage.tokensOut)
                 .model(task.model())
                 .build();
-        Message saved = messageRepository.save(assistantMessage);
+        Message saved = usageTrackingService.recordChatUsage(
+                task.userId(), task.sessionId(), assistantMessage);
 
         return saved.getId();
     }
