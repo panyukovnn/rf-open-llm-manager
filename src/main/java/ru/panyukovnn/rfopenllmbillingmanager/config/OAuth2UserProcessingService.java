@@ -1,15 +1,18 @@
 package ru.panyukovnn.rfopenllmbillingmanager.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.panyukovnn.rfopenllmbillingmanager.model.AppUser;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.AppUserRepository;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuth2UserProcessingService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
@@ -18,16 +21,20 @@ public class OAuth2UserProcessingService implements OAuth2UserService<OAuth2User
     private final AppUserRepository appUserRepository;
 
     @Override
+    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
+        log.info("OAuth2 loadUser вызван");
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         String googleId = (String) attributes.get("sub");
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
+        log.info("OAuth2 пользователь: googleId={}, email={}", googleId, email);
 
-        appUserRepository.findByGoogleId(googleId)
+        AppUser appUser = appUserRepository.findByGoogleId(googleId)
                 .orElseGet(() -> createAppUser(googleId, email, name));
+        log.info("AppUser сохранён/найден: id={}", appUser.getId());
 
         return oAuth2User;
     }

@@ -196,6 +196,47 @@ class UserSubscriptionServiceImplUnitTest {
             assertNotNull(result.getPeriodEnd());
             verify(userSubscriptionRepository).save(any(UserSubscription.class));
         }
+
+        @Test
+        void when_activateSubscription_withExistingActiveSubscription_then_existingSubscriptionReused() {
+            UUID userId = UUID.randomUUID();
+            UUID existingSubscriptionId = UUID.randomUUID();
+            UUID oldPlanId = UUID.randomUUID();
+            UUID newPlanId = UUID.randomUUID();
+            UserSubscription existingSubscription = UserSubscription.builder()
+                    .id(existingSubscriptionId)
+                    .appUserId(userId)
+                    .subscriptionPlanId(oldPlanId)
+                    .status(SubscriptionStatus.ACTIVE)
+                    .tokensUsed(12345L)
+                    .periodStart(Instant.now().minusSeconds(86400))
+                    .periodEnd(Instant.now().plusSeconds(86400))
+                    .build();
+            SubscriptionPlan newPlan = SubscriptionPlan.builder()
+                    .id(newPlanId)
+                    .name("Standard")
+                    .monthlyTokenLimit(5000000L)
+                    .build();
+
+            when(userSubscriptionRepository.findByAppUserIdAndStatus(userId, SubscriptionStatus.ACTIVE))
+                    .thenReturn(Optional.of(existingSubscription));
+            when(subscriptionPlanService.findById(newPlanId)).thenReturn(newPlan);
+            when(subscriptionProperty.getPeriodDays()).thenReturn(30);
+            when(userSubscriptionRepository.save(any(UserSubscription.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            UserSubscription result = userSubscriptionService.activateSubscription(userId, newPlanId);
+
+            assertNotNull(result);
+            assertEquals(existingSubscriptionId, result.getId());
+            assertEquals(userId, result.getAppUserId());
+            assertEquals(newPlanId, result.getSubscriptionPlanId());
+            assertEquals(SubscriptionStatus.ACTIVE, result.getStatus());
+            assertEquals(0L, result.getTokensUsed());
+            assertNotNull(result.getPeriodStart());
+            assertNotNull(result.getPeriodEnd());
+            verify(userSubscriptionRepository).save(existingSubscription);
+        }
     }
 
     @Nested

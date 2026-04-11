@@ -65,6 +65,7 @@ billing-manager:
     reserve-tokens: ${CHAT_RESERVE_TOKENS:1024}
     sse-timeout-ms: ${CHAT_SSE_TIMEOUT_MS:120000}
     idempotency-ttl-minutes: ${CHAT_IDEMPOTENCY_TTL_MINUTES:60}
+    title-generation-model: ${CHAT_TITLE_MODEL:deepseek/deepseek-chat}
 
 logbook:
   filter:

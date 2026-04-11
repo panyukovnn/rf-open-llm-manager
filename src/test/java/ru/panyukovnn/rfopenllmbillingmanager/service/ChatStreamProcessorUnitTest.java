@@ -17,15 +17,18 @@ import ru.panyukovnn.rfopenllmbillingmanager.model.MessageRole;
 import ru.panyukovnn.rfopenllmbillingmanager.property.ChatProperty;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.MessageRepository;
 import ru.panyukovnn.rfopenllmbillingmanager.service.impl.ChatStreamProcessor;
+import ru.panyukovnn.rfopenllmbillingmanager.service.impl.SessionTitleGenerator;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +48,8 @@ class ChatStreamProcessorUnitTest {
     private IdempotencyCache idempotencyCache;
     @Mock
     private ChatProperty chatProperty;
+    @Mock
+    private SessionTitleGenerator sessionTitleGenerator;
 
     private ChatStreamProcessor processor;
 
@@ -53,7 +58,8 @@ class ChatStreamProcessorUnitTest {
         Executor syncExecutor = Runnable::run;
         processor = new ChatStreamProcessor(
                 litellmClient, messageRepository, usageTrackingService,
-                sessionService, idempotencyCache, chatProperty, syncExecutor);
+                sessionService, idempotencyCache, chatProperty,
+                sessionTitleGenerator, syncExecutor);
     }
 
     @Nested
@@ -65,10 +71,15 @@ class ChatStreamProcessorUnitTest {
             UUID userId = UUID.randomUUID();
             UUID savedId = UUID.randomUUID();
             ChatStreamProcessor.StreamTask task = buildTask(userId, sessionId);
-            Iterator<ChatCompletionChunk> chunks = buildChunks("Привет", "!").iterator();
+            List<ChatCompletionChunk> chunks = buildChunks("Привет", "!");
 
             when(chatProperty.getReserveTokens()).thenReturn(1024);
-            when(litellmClient.streamCompletion(eq("sk-key"), any())).thenReturn(chunks);
+            doAnswer(invocation -> {
+                Consumer<ChatCompletionChunk> consumer = invocation.getArgument(2);
+                chunks.forEach(consumer);
+
+                return null;
+            }).when(litellmClient).streamCompletion(eq("sk-key"), any(), any());
             when(usageTrackingService.recordChatUsage(any(UUID.class), any(UUID.class), any(Message.class)))
                     .thenAnswer(invocation -> {
                         Message message = invocation.getArgument(2);
@@ -92,10 +103,15 @@ class ChatStreamProcessorUnitTest {
             UUID sessionId = UUID.randomUUID();
             UUID savedId = UUID.randomUUID();
             ChatStreamProcessor.StreamTask task = buildTask(UUID.randomUUID(), sessionId);
-            Iterator<ChatCompletionChunk> chunks = buildChunks("ok").iterator();
+            List<ChatCompletionChunk> chunks = buildChunks("ok");
 
             when(chatProperty.getReserveTokens()).thenReturn(1024);
-            when(litellmClient.streamCompletion(eq("sk-key"), any())).thenReturn(chunks);
+            doAnswer(invocation -> {
+                Consumer<ChatCompletionChunk> consumer = invocation.getArgument(2);
+                chunks.forEach(consumer);
+
+                return null;
+            }).when(litellmClient).streamCompletion(eq("sk-key"), any(), any());
             when(usageTrackingService.recordChatUsage(any(UUID.class), any(UUID.class), any(Message.class)))
                     .thenAnswer(invocation -> {
                         Message message = invocation.getArgument(2);
@@ -115,8 +131,8 @@ class ChatStreamProcessorUnitTest {
             ChatStreamProcessor.StreamTask task = buildTask(UUID.randomUUID(), sessionId);
 
             when(chatProperty.getReserveTokens()).thenReturn(1024);
-            when(litellmClient.streamCompletion(eq("sk-key"), any()))
-                    .thenThrow(new BusinessException("ad65", "LLM-апстрим недоступен"));
+            doThrow(new BusinessException("ad65", "LLM-апстрим недоступен"))
+                    .when(litellmClient).streamCompletion(eq("sk-key"), any(), any());
 
             processor.process(task);
 

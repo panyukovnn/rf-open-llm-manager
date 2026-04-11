@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: "14.update_subscription_plan_prices.yml"
+      author: "Panyukov NN"
+      changes:
+        - sqlFile:
+            path: ./sql/20260411_01_update_subscription_plan_prices.sql
+            relativeToChangelogFile: true

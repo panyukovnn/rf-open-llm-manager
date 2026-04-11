@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: "13.update_subscription_plan_names.yml"
+      author: system
+      changes:
+        - update:
+            tableName: subscription_plan
+            where: "name = 'Free'"
+            columns:
+              - column:
+                  name: name
+                  value: "Базовый (бесплатный)"
+              - column:
+                  name: active
+                  valueBoolean: false
+        - update:
+            tableName: subscription_plan
+            where: "name = 'Standard'"
+            columns:
+              - column:
+                  name: name
+                  value: "Средний"
+        - update:
+            tableName: subscription_plan
+            where: "name = 'Pro'"
+            columns:
+              - column:
+                  name: name
+                  value: "Максимальный"
