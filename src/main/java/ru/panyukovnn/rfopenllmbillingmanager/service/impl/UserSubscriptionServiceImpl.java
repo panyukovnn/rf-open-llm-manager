@@ -70,14 +70,17 @@ public class UserSubscriptionServiceImpl implements UserSubscriptionService {
         Instant now = Instant.now();
         Instant periodEnd = now.plus(subscriptionProperty.getPeriodDays(), ChronoUnit.DAYS);
 
-        UserSubscription subscription = UserSubscription.builder()
-                .appUserId(userId)
-                .subscriptionPlanId(plan.getId())
-                .status(SubscriptionStatus.ACTIVE)
-                .tokensUsed(0L)
-                .periodStart(now)
-                .periodEnd(periodEnd)
-                .build();
+        UserSubscription subscription = userSubscriptionRepository
+                .findByAppUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+                .orElseGet(() -> UserSubscription.builder()
+                        .appUserId(userId)
+                        .status(SubscriptionStatus.ACTIVE)
+                        .build());
+
+        subscription.setSubscriptionPlanId(plan.getId());
+        subscription.setTokensUsed(0L);
+        subscription.setPeriodStart(now);
+        subscription.setPeriodEnd(periodEnd);
 
         return userSubscriptionRepository.save(subscription);
     }

@@ -27,4 +27,8 @@ public class ChatProperty {
      * Время жизни записи идемпотентности
      */
     private long idempotencyTtlMinutes;
+    /**
+     * Модель для генерации названия сессии
+     */
+    private String titleGenerationModel;
 }

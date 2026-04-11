@@ -80,11 +80,10 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     }
 
     @Override
+    @Transactional
     public String findActiveVirtualKey(UUID userId) {
         ApiKey apiKey = apiKeyRepository.findFirstByAppUserIdAndActiveTrueOrderByCreateTimeAsc(userId)
-                .orElseThrow(() -> new BusinessException(
-                        "0a27",
-                        "Активный API-ключ не найден"));
+                .orElseGet(() -> createDefaultKey(userId));
 
         if (apiKey.getVirtualKey() == null) {
             throw new BusinessException(
@@ -93,6 +92,18 @@ public class ApiKeyServiceImpl implements ApiKeyService {
         }
 
         return apiKey.getVirtualKey();
+    }
+
+    /**
+     * Создаёт API-ключ по умолчанию при первом обращении пользователя к чату
+     */
+    private ApiKey createDefaultKey(UUID userId) {
+        log.info("Автоматическое создание API-ключа для пользователя {}", userId);
+
+        LitellmKeyGenerateResponse litellmResponse = requestLitellmKeyGeneration(userId);
+        String generatedKey = litellmResponse.getKey();
+
+        return saveApiKey(userId, "default", generatedKey, litellmResponse.getKeyId(), generatedKey);
     }
 
     @Override

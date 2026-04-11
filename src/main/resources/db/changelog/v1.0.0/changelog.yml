@@ -41,3 +41,9 @@ databaseChangeLog:
   - include:
       file: 12.alter_usage_event_add_session_message.yml
       relativeToChangelogFile: true
+  - include:
+      file: 13.update_subscription_plan_names.yml
+      relativeToChangelogFile: true
+  - include:
+      file: 14.update_subscription_plan_prices.yml
+      relativeToChangelogFile: true

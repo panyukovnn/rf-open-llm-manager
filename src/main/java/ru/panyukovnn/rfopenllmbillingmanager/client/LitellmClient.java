@@ -6,7 +6,7 @@ import ru.panyukovnn.rfopenllmbillingmanager.dto.LitellmKeyGenerateRequest;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.LitellmKeyGenerateResponse;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.LitellmKeyUpdateRequest;
 
-import java.util.Iterator;
+import java.util.function.Consumer;
 
 public interface LitellmClient {
 
@@ -16,5 +16,7 @@ public interface LitellmClient {
 
     void updateKeyBudget(String litellmKeyId, LitellmKeyUpdateRequest request);
 
-    Iterator<ChatCompletionChunk> streamCompletion(String virtualKey, ChatCompletionRequest request);
+    void streamCompletion(String virtualKey, ChatCompletionRequest request, Consumer<ChatCompletionChunk> chunkConsumer);
+
+    String chatCompletion(String virtualKey, ChatCompletionRequest request);
 }

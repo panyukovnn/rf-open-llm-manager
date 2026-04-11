@@ -13,13 +13,11 @@ import ru.panyukovnn.rfopenllmbillingmanager.dto.ChatCompletionChunk;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.ChatCompletionRequest;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.ChatMessage;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -66,21 +64,13 @@ class LitellmClientImplUnitTest {
                         .contentType(MediaType.TEXT_EVENT_STREAM)
                         .body(sseBody));
 
-        Iterator<ChatCompletionChunk> iterator = litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest());
+        List<ChatCompletionChunk> received = new ArrayList<>();
+        litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest(), received::add);
 
-        assertTrue(iterator.hasNext());
-        ChatCompletionChunk first = iterator.next();
-        assertEquals("Hello", first.getChoices().get(0).getDelta().getContent());
-
-        assertTrue(iterator.hasNext());
-        ChatCompletionChunk second = iterator.next();
-        assertEquals(" world", second.getChoices().get(0).getDelta().getContent());
-
-        assertTrue(iterator.hasNext());
-        ChatCompletionChunk third = iterator.next();
-        assertEquals("stop", third.getChoices().get(0).getFinishReason());
-
-        assertFalse(iterator.hasNext());
+        assertEquals(3, received.size());
+        assertEquals("Hello", received.get(0).getChoices().get(0).getDelta().getContent());
+        assertEquals(" world", received.get(1).getChoices().get(0).getDelta().getContent());
+        assertEquals("stop", received.get(2).getChoices().get(0).getFinishReason());
         mockServer.verify();
     }
 
@@ -94,7 +84,7 @@ class LitellmClientImplUnitTest {
 
         BusinessException exception = assertThrows(
                 BusinessException.class,
-                () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest()));
+                () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest(), chunk -> {}));
 
         assertEquals("8d4a", exception.getLocation());
     }
@@ -109,7 +99,7 @@ class LitellmClientImplUnitTest {
 
         BusinessException exception = assertThrows(
                 BusinessException.class,
-                () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest()));
+                () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest(), chunk -> {}));
 
         assertEquals("f569", exception.getLocation());
     }
@@ -124,7 +114,7 @@ class LitellmClientImplUnitTest {
 
         BusinessException exception = assertThrows(
                 BusinessException.class,
-                () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest()));
+                () -> litellmClient.streamCompletion(VIRTUAL_KEY, buildRequest(), chunk -> {}));
 
         assertEquals("d9ac", exception.getLocation());
     }

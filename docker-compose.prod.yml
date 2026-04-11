@@ -1,0 +1,53 @@
+services:
+  billing-manager:
+    build:
+      context: ./rf-open-llm-manager
+      dockerfile: Dockerfile
+      secrets:
+        - gh_token
+    container_name: billing-manager
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      POSTGRES_HOST: host.docker.internal
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      LITELLM_BASE_URL: ${LITELLM_BASE_URL}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+      LITELLM_CALLBACK_SECRET: ${LITELLM_CALLBACK_SECRET}
+      YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID}
+      YOOKASSA_SECRET_KEY: ${YOOKASSA_SECRET_KEY}
+      FRONTEND_REDIRECT_URL: ${FRONTEND_REDIRECT_URL}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    ports:
+      - "127.0.0.1:8080:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  front:
+    build:
+      context: ./rf-open-llm-front
+      dockerfile: Dockerfile
+    container_name: billing-front
+    restart: unless-stopped
+    depends_on:
+      - billing-manager
+    ports:
+      - "127.0.0.1:3000:80"
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+secrets:
+  gh_token:
+    environment: GH_TOKEN

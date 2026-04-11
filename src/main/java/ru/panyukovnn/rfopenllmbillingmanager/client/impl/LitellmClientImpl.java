@@ -14,6 +14,7 @@ import ru.panyukovnn.referencemodelstarter.util.RestCallWrapper;
 import ru.panyukovnn.rfopenllmbillingmanager.client.LitellmClient;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.ChatCompletionChunk;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.ChatCompletionRequest;
+import ru.panyukovnn.rfopenllmbillingmanager.dto.ChatCompletionResponse;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.LitellmKeyDeleteRequest;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.LitellmKeyGenerateRequest;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.LitellmKeyGenerateResponse;
@@ -25,9 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 @Component
@@ -96,11 +96,11 @@ public class LitellmClientImpl implements LitellmClient {
     }
 
     @Override
-    public Iterator<ChatCompletionChunk> streamCompletion(String virtualKey, ChatCompletionRequest request) {
+    public void streamCompletion(String virtualKey, ChatCompletionRequest request, Consumer<ChatCompletionChunk> chunkConsumer) {
         log.info("Запрос на стриминг chat completion в LiteLLM, model={}", request.getModel());
 
         try {
-            return executeStreamCall(virtualKey, toStreamRequest(request));
+            executeStreamCall(virtualKey, toStreamRequest(request), chunkConsumer);
         } catch (BusinessException e) {
             throw e;
         } catch (ResourceAccessException e) {
@@ -114,11 +114,38 @@ public class LitellmClientImpl implements LitellmClient {
         }
     }
 
+    @Override
+    public String chatCompletion(String virtualKey, ChatCompletionRequest request) {
+        log.info("Non-streaming chat completion в LiteLLM, model={}", request.getModel());
+
+        ChatCompletionRequest nonStreamRequest = ChatCompletionRequest.builder()
+                .model(request.getModel())
+                .messages(request.getMessages())
+                .temperature(request.getTemperature())
+                .maxTokens(request.getMaxTokens())
+                .stream(Boolean.FALSE)
+                .build();
+
+        ChatCompletionResponse response = liteLlmRestClient.post()
+                .uri("/chat/completions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(headers -> headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + virtualKey))
+                .body(nonStreamRequest)
+                .retrieve()
+                .body(ChatCompletionResponse.class);
+
+        if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+            return "";
+        }
+
+        return response.getChoices().get(0).getMessage().getContent();
+    }
+
     /**
-     * Выполняет stream-запрос и возвращает итератор распарсенных chunk-ов
+     * Выполняет stream-запрос, читая и передавая чанки по мере поступления из upstream
      */
-    private Iterator<ChatCompletionChunk> executeStreamCall(String virtualKey, ChatCompletionRequest streamRequest) {
-        return liteLlmRestClient.post()
+    private void executeStreamCall(String virtualKey, ChatCompletionRequest streamRequest, Consumer<ChatCompletionChunk> chunkConsumer) {
+        liteLlmRestClient.post()
                 .uri("/chat/completions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(headers -> headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + virtualKey))
@@ -130,7 +157,9 @@ public class LitellmClientImpl implements LitellmClient {
                         throw toStatusException(status, readBodySafely(httpResponse.getBody()));
                     }
 
-                    return parseSseChunks(httpResponse.getBody()).iterator();
+                    processSseStream(httpResponse.getBody(), chunkConsumer);
+
+                    return null;
                 });
     }
 
@@ -178,11 +207,9 @@ public class LitellmClientImpl implements LitellmClient {
     }
 
     /**
-     * Парсит SSE-поток в список chunk-ов, учитывая маркер окончания [DONE]
+     * Читает SSE-поток построчно и передаёт каждый чанк в consumer сразу при получении
      */
-    private List<ChatCompletionChunk> parseSseChunks(InputStream body) throws IOException {
-        List<ChatCompletionChunk> chunks = new ArrayList<>();
-
+    private void processSseStream(InputStream body, Consumer<ChatCompletionChunk> chunkConsumer) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
             String line = reader.readLine();
 
@@ -194,13 +221,12 @@ public class LitellmClientImpl implements LitellmClient {
                         break;
                     }
 
-                    chunks.add(objectMapper.readValue(data, ChatCompletionChunk.class));
+                    ChatCompletionChunk chunk = objectMapper.readValue(data, ChatCompletionChunk.class);
+                    chunkConsumer.accept(chunk);
                 }
 
                 line = reader.readLine();
             }
         }
-
-        return chunks;
     }
 }

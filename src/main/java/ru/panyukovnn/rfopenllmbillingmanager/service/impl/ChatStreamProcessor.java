@@ -15,6 +15,7 @@ import ru.panyukovnn.rfopenllmbillingmanager.dto.MessageChunk;
 import ru.panyukovnn.rfopenllmbillingmanager.dto.MessageChunkType;
 import ru.panyukovnn.rfopenllmbillingmanager.model.Message;
 import ru.panyukovnn.rfopenllmbillingmanager.model.MessageRole;
+import ru.panyukovnn.rfopenllmbillingmanager.model.Session;
 import ru.panyukovnn.rfopenllmbillingmanager.property.ChatProperty;
 import ru.panyukovnn.rfopenllmbillingmanager.repository.MessageRepository;
 import ru.panyukovnn.rfopenllmbillingmanager.service.IdempotencyCache;
@@ -22,7 +23,6 @@ import ru.panyukovnn.rfopenllmbillingmanager.service.SessionService;
 import ru.panyukovnn.rfopenllmbillingmanager.service.UsageTrackingService;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -40,6 +40,7 @@ public class ChatStreamProcessor {
     private final SessionService sessionService;
     private final IdempotencyCache idempotencyCache;
     private final ChatProperty chatProperty;
+    private final SessionTitleGenerator sessionTitleGenerator;
     @Qualifier("chatStreamingExecutor")
     private final Executor chatStreamingExecutor;
 
@@ -78,15 +79,54 @@ public class ChatStreamProcessor {
      */
     private void runStream(StreamTask task) throws IOException {
         ChatCompletionRequest upstreamRequest = buildUpstreamRequest(task);
-        Iterator<ChatCompletionChunk> chunks = litellmClient.streamCompletion(task.virtualKey(), upstreamRequest);
-
         StringBuilder accumulated = new StringBuilder();
-        TokenUsage usage = streamChunks(task.emitter(), chunks, accumulated);
+        TokenUsage usage = new TokenUsage();
 
-        UUID assistantMessageId = persistAssistantMessage(task, accumulated.toString(), usage);
+        litellmClient.streamCompletion(task.virtualKey(), upstreamRequest, chunk -> {
+            captureUsage(chunk, usage);
+            String content = extractDeltaContent(chunk);
+
+            if (content != null) {
+                accumulated.append(content);
+
+                try {
+                    task.emitter().send(tokenChunk(content));
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка отправки чанка клиенту", e);
+                }
+            }
+        });
+
+        String assistantContent = accumulated.toString();
+        UUID assistantMessageId = persistAssistantMessage(task, assistantContent, usage);
         storeIdempotency(task, assistantMessageId);
         sessionService.touchLastUpdateTime(task.sessionId());
         sendDone(task.emitter(), assistantMessageId);
+        generateTitleIfFirstMessage(task, assistantContent);
+    }
+
+    /**
+     * Генерирует название сессии через LLM, если это первый обмен сообщениями
+     */
+    private void generateTitleIfFirstMessage(StreamTask task, String assistantContent) {
+        boolean isFirstMessage = task.chatMessages().stream()
+                .filter(m -> "user".equals(m.getRole()))
+                .count() == 1;
+
+        if (!isFirstMessage) {
+            return;
+        }
+
+        String userMessage = task.chatMessages().stream()
+                .filter(m -> "user".equals(m.getRole()))
+                .map(ChatMessage::getContent)
+                .findFirst()
+                .orElse("");
+
+        Session session = sessionService.findEntityById(task.userId(), task.sessionId());
+        chatStreamingExecutor.execute(() ->
+                sessionTitleGenerator.generateTitle(task.virtualKey(), session, userMessage, assistantContent)
+        );
     }
 
     /**
@@ -99,27 +139,6 @@ public class ChatStreamProcessor {
                 .stream(Boolean.TRUE)
                 .maxTokens(chatProperty.getReserveTokens())
                 .build();
-    }
-
-    /**
-     * Итерирует чанки upstream и отправляет TOKEN-чанки клиенту, накапливая контент
-     */
-    private TokenUsage streamChunks(SseEmitter emitter, Iterator<ChatCompletionChunk> chunks, StringBuilder accumulated) throws IOException {
-        TokenUsage usage = new TokenUsage();
-
-        while (chunks.hasNext()) {
-            ChatCompletionChunk chunk = chunks.next();
-            captureUsage(chunk, usage);
-            String content = extractDeltaContent(chunk);
-
-            if (content == null) {
-                continue;
-            }
-            accumulated.append(content);
-            emitter.send(tokenChunk(content));
-        }
-
-        return usage;
     }
 
     private String extractDeltaContent(ChatCompletionChunk chunk) {
